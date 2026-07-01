@@ -1,0 +1,440 @@
+drug_name,category,manufacturer,unit_price_inr,otc_or_rx
+Justaday Capsule,Analgesic,Tas Med India Pvt Ltd,10.18,OTC
+Rapinac 25mg Injection,Analgesic,Varun Life Sciences Pvt Ltd,5.5,Rx
+Assmol 100mg/325mg Tablet,Analgesic,Assign Drug Industries Pvt Ltd,3.6,OTC
+Aester-P Oral Suspension,Analgesic,Alester Pharma Pvt Ltd,0.87,OTC
+Xpace-MR Tablet,Analgesic,Saffron Medicare Pvt Ltd,7.8,OTC
+Fenobax SP 100mg/325mg/15mg Tablet,Analgesic,Baxton Pharmacia,7.9,OTC
+Fenace 125mg Oral Suspension,Analgesic,Invision Medi Sciences Pvt Ltd,0.58,OTC
+Ubadol-SP Tablet,Analgesic,Ubatlife Health Care,10.9,OTC
+FEE Oral Drops,Analgesic,Safetech Formulation,1.33,OTC
+Fenprost G 200mg/20mg Capsule SR,Analgesic,Metamorf Lifesciences,7.21,OTC
+Dicloryn SP 50mg/325mg/10mg Tablet,Analgesic,Aeryn Lifesciences Pvt Ltd,6.3,OTC
+Thermaset DS 250mg Oral Suspension,Analgesic,Orange Biotech Pvt Ltd,0.64,OTC
+Freemol 100mg/325mg Tablet,Analgesic,Omnimol Meditechnics Pvt Ltd,5.0,OTC
+Newpam Tablet,Analgesic,Medoz Pharmaceutical Pvt. Ltd,2.86,OTC
+M Nac 75mg Injection,Analgesic,Mediwill Life Sciences,16.0,Rx
+Aciz SP 100 mg/500 mg/10 mg Tablet,Analgesic,Ritz Pharma,6.5,OTC
+Acondec S 50mg/10mg Tablet,Analgesic,Aconwell Pharma Pvt Ltd,4.75,OTC
+Opimol 250 Oral Suspension,Analgesic,Overseas Pharma Pvt Ltd,0.67,OTC
+Parapet 50mg/500mg Tablet,Analgesic,Petal Lifesciences,1.9,OTC
+Mobicure MR 100mg/325mg/250mg Tablet,Analgesic,Celcure Pharmaceuticals,17.0,OTC
+Aceford SP 100mg/325mg/15mg Tablet,Analgesic,Crossford Healthcare,8.5,OTC
+Fenics MR 100mg/325mg/250mg Tablet,Analgesic,Alvonics Lifesciences Pvt Ltd,8.5,OTC
+Napuse 250mg/10mg Tablet,Analgesic,Events Pharma,4.5,OTC
+Kesroclof P Oral Suspension,Analgesic,Kesrox Pharmaceuticals,1.13,OTC
+Acejeev-P 100mg/325mg Tablet,Analgesic,Jeevecam Lifescience Pvt Ltd,3.5,OTC
+Aceplas P 100mg/500mg Tablet,Analgesic,Plasmid Healthcare Pvt Ltd,3.1,OTC
+Flagapar Infusion,Analgesic,Flagship Biotech International,5.17,OTC
+PAINE 50MG CAPSULE,Analgesic,Pharma Drugs & Chemicals,5.59,OTC
+Fliclo-S Tablet,Analgesic,Flanca Life Sciences,5.5,OTC
+Diclocas 75mg Injection,Analgesic,Casca Remedies Pvt Ltd,15.0,Rx
+Clopogril-AS Tablet,Analgesic,Care Formulation Labs Pvt Ltd,4.95,OTC
+Fepanil 120mg/5ml Syrup,Analgesic,Veritaz Healthcare Ltd,0.66,OTC
+Papol T 325mg/37.5mg Tablet,Analgesic,Notus Pharmaceuticals Pvt Ltd,7.0,OTC
+Spade AP 100mg/325mg/15mg Tablet,Analgesic,Med Manor Organics Pvt Ltd,7.95,OTC
+Aci-SP 100mg/500mg/15mg Tablet,Analgesic,Polard Healthcare,6.0,OTC
+NAC SR 150 Tablet,Analgesic,Systopic Laboratories Pvt Ltd,5.9,OTC
+Aspo 75 Tablet,Analgesic,Zeelab Pharmacy Pvt Ltd,0.61,OTC
+Aclotec Plus 100 mg/500 mg Tablet,Analgesic,Targof Pure Drugs Td,2.73,OTC
+Fenzec 75mg Injection,Analgesic,M.M Pharma,15.0,Rx
+Nam Safe Plus Syrup,Analgesic,Lincoln Pharmaceuticals Ltd,0.65,OTC
+Ceftromez 250mg Injection,Antibiotic,Sovicare Pharmaceuticals,29.0,Rx
+Fusy CV 500mg/125mg Tablet,Antibiotic,Biosys Medisciences,75.0,Rx
+Voxquin OZ 250mg/500mg Tablet,Antibiotic,Werke Healthcare,8.5,Rx
+Azibey 500mg Tablet,Antibiotic,Abbey Health Care Pvt Ltd,16.71,Rx
+Azigrand 250mg Tablet,Antibiotic,Novalab Healthcare Pvt Ltd,11.08,Rx
+Kleen Gel,Antibiotic,Syswin Pharmaceuticals Pvt Ltd,7.5,Rx
+Levohex 500mg Tablet,Antibiotic,Hexal Pharmaceuticals,8.0,Rx
+Omeflox Eye Drop,Antibiotic,Entod Pharmaceuticals Ltd,9.19,Rx
+Wiz LB 100mg Tablet DT,Antibiotic,Cure Kelvin,8.0,Rx
+Ozzymycin 500mg Tablet,Antibiotic,Henry Pharmaceuticals,25.0,Rx
+Aglocin 500mg Tablet,Antibiotic,Egis Healthcare,4.0,Rx
+Metoni O Oral Suspension,Antibiotic,Seepi Pharma Pvt Ltd,1.3,Rx
+Polyclav-DS Tablet,Antibiotic,Macleods Pharmaceuticals Pvt Ltd,17.5,Rx
+Cefixwell OF Dry Syrup,Antibiotic,Everwell Pharma Pvt Ltd,2.67,Rx
+Cipromid TZ 300 Tablet,Antibiotic,Midas Healthcare Ltd,6.2,Rx
+Ofloxemm-OZ Tablet,Antibiotic,Ess Emm Pharma Pvt Ltd,7.8,Rx
+Auglex 500mg/125mg Tablet,Antibiotic,Unilex Lifesciences Pvt Ltd,18.8,Rx
+Popucef 500mg Tablet,Antibiotic,GK Medicos,45.5,Rx
+Ofbid OZ Tablet,Antibiotic,Aarpik Pharmaceuticals Pvt Ltd,7.5,Rx
+Levotran 500mg Tablet,Antibiotic,Evershine Lifesciences Pvt Ltd,6.8,Rx
+Raniflox OZ 200mg/500mg Tablet,Antibiotic,Renvic Lifesciences Pvt Ltd,7.8,Rx
+Amocrin-CV Dry Syrup,Antibiotic,Crinova Healthcare,1.97,Rx
+Sanzone 1000mg Injection,Antibiotic,Mediwill Life Sciences,47.95,Rx
+Off N ON Suspension,Antibiotic,Medisys Biotech Pvt Ltd,1.37,Rx
+Ayubact 250mg Tablet,Antibiotic,Bioethics Lifesciences Pvt Ltd,10.5,Rx
+Skaxim 500mg Tablet,Antibiotic,Skars Healthcare Pvt Ltd,6.5,Rx
+Kvmox 250 Capsule,Antibiotic,Kavita Pharma Chem,3.7,Rx
+Prifix 200mg Tablet,Antibiotic,Priya Life Science,22.0,Rx
+Elicef 100mg Tablet DT,Antibiotic,GRAF Laboratories Pvt Ltd,11.45,Rx
+Cefag LB 200mg Tablet,Antibiotic,Agron Remedies Pvt Ltd,20.0,Rx
+Azymake 500mg Tablet,Antibiotic,Ashlife Healthcare,18.7,Rx
+Rymocin 200mg Tablet,Antibiotic,Atyad Life Sciences Pvt Ltd,5.5,Rx
+Ofone 200mg Tablet,Antibiotic,Encyclo Healthcare,5.1,Rx
+I Tone 2000mg Injection,Antibiotic,Sanjivani Parenteral Ltd,115.0,Rx
+StayHappi Amoxycillin+Pantoprazole+Clarithromycin 750mg/40mg/500mg Kit,Antibiotic,Sarvagunaushdhi Pvt Ltd,90.0,Rx
+Cefimun 250mg Tablet,Antibiotic,Intellect Lifescience,19.67,Rx
+Ticocef S 250mg/125mg Injection,Antibiotic,Vistica Life Sciences,44.0,Rx
+Nexim 200mg Tablet DT,Antibiotic,Nexus India,17.42,Rx
+Moxidas-CV  Dry Syrup,Antibiotic,Midas Healthcare Ltd,1.67,Rx
+Lombard 250mg Tablet,Antibiotic,Vsaar Pharma Pvt Ltd,4.9,Rx
+Cetriken 10mg Tablet,Antihistamine,Symbiosis Pharmaceuticals Pvt Ltd,1.85,OTC
+Leezet-ML Kid 2.5mg/4mg Tablet,Antihistamine,Floreat Medica Pvt Ltd,3.9,OTC
+Skylor 10 Tablet,Antihistamine,Rishab Healthcare pvt. Ltd.,3.9,OTC
+Cetrizine Cold DS Syrup,Antihistamine,Knoll Healthcare Pvt Ltd,1.05,OTC
+LM Kid Syrup,Antihistamine,Rozer Pharmaceuticals Pvt Ltd,1.33,OTC
+L 5mg Tablet,Antihistamine,Solitaire Pharmacia Pvt Ltd,1.99,OTC
+Cetafed Tablet,Antihistamine,Oasis Remedies,2.5,OTC
+Lvcys M Tablet,Antihistamine,Macsys LifeSciences,6.0,OTC
+Rid-AR Kid Syrup,Antihistamine,Cipla Ltd,2.24,OTC
+Livazin Tablet,Antihistamine,Varmed Pharma Pvt Ltd,3.8,OTC
+Alerdain 5mg Tablet,Antihistamine,Ordain Health Care Global Pvt Ltd,4.0,OTC
+Montigrace-L Tablet,Antihistamine,Gracevera Pharma,11.0,OTC
+Livozy 10mg Tablet,Antihistamine,Eraas International,5.5,OTC
+Lorzar 10mg Tablet,Antihistamine,Ellederma Pharma Pvt Ltd,4.5,OTC
+Monteshot L 5mg/10mg Tablet,Antihistamine,Vats Biotech Pvt Ltd,10.7,OTC
+Swlev 10mg Tablet,Antihistamine,Swakam Biotech Private Limited,6.5,OTC
+Lemra AM 5mg/60mg Tablet,Antihistamine,Garwyn Remedies,5.0,OTC
+Medocet 5mg Tablet,Antihistamine,Candela Healthcare,3.9,OTC
+Nozee Tablet,Antihistamine,Dabur India Ltd,3.21,OTC
+Cocoryl 2mg/10mg Tablet,Antihistamine,Taj Pharma India Ltd,4.2,OTC
+Coldhit Oral Suspension,Antihistamine,Plena Remedies,0.92,OTC
+Phensedyl Cold Syrup,Antihistamine,Abbott,0.91,OTC
+Cetnix MT Tablet,Antihistamine,Biochemix Health Care Pvt. Ltd.,9.5,OTC
+Tykast 5mg/10mg Tablet,Antihistamine,Tested & Trusted Pharma Pvt Ltd,8.9,OTC
+Fexodive 180mg Tablet,Antihistamine,Staneil Pharma,13.0,OTC
+Mdeys L 5mg/10mg Tablet,Antihistamine,Sakshit Healthcare,9.5,OTC
+Czine A 5mg/60mg Tablet,Antihistamine,Vatican Life Sciences Pvt Ltd,37.0,OTC
+Eolist M 5mg/10mg Tablet,Antihistamine,Biophar Lifesciences Pvt Ltd,9.0,OTC
+Lorariv 10mg Tablet,Antihistamine,East African (India) Overseas,4.08,OTC
+Rhinowell DS Oral Suspension,Antihistamine,Ridhima Biocare,0.92,OTC
+Exiplon 4 mg/10 mg Syrup,Antihistamine,Khandelwal Laboratories Pvt Ltd,0.83,OTC
+Citlense-M Oral Suspension,Antihistamine,Medilance Healthcare,1.15,OTC
+Fenexia 120mg Tablet,Antihistamine,Solace Biotech Ltd,9.8,OTC
+Fenixa M Tablet,Antihistamine,Canixa Life Sciences Pvt,17.0,OTC
+Lequit CS Suspension,Antihistamine,Quantum Formulations,0.73,OTC
+Tzine 10mg Tablet,Antihistamine,Health Care Formulations Pvt Ltd,2.6,OTC
+Corty liv Plus Tablet,Antihistamine,Panm Labs India,4.5,OTC
+DavaIndia Desloratadine 5mg Tablet,Antihistamine,Davaindia Generic Pharmacy,2.0,OTC
+Lemocit AM 5mg/60mg Tablet,Antihistamine,Biobrick Pharma,7.9,OTC
+Monago-L Tablet,Antihistamine,Guillain Pharma Private Limited,5.98,OTC
+Glimwik M 2mg/500mg Tablet,Antidiabetic,Biocube Pharma,9.0,Rx
+Insu-GM (ER) Tablet,Antidiabetic,Olens Healthcare Pvt Ltd,9.0,Rx
+Sitara-M 50/500 Tablet ER,Antidiabetic,Intas Pharmaceuticals Ltd,9.9,Rx
+Winixia 500mg Tablet SR,Antidiabetic,Wings Biotech Ltd,2.0,Rx
+Dippivi-M 50/1000 Tablet,Antidiabetic,Jubilant Life Sciences,9.0,Rx
+Vogtid 0.3mg Tablet MD,Antidiabetic,Vasu Organics Pvt Ltd,8.91,Rx
+Gpcon M 2mg/500mg Tablet,Antidiabetic,Catholicon Pharmaceuticals Pvt Ltd,5.9,Rx
+Dailymet GP 1 Tablet SR,Antidiabetic,Prevego Healthcare & Research Private Limited,9.8,Rx
+Sysvog 0.3mg Tablet,Antidiabetic,Syswin Pharmaceuticals Pvt Ltd,4.5,Rx
+Glimitoss M 2mg/500mg Tablet SR,Antidiabetic,Minitoss Medicines,6.0,Rx
+Amaryl 3mg Tablet,Antidiabetic,Sanofi India  Ltd,14.61,Rx
+Dartmet-G1 Forte Tablet SR,Antidiabetic,Addii Biotech Pvt Ltd,6.64,Rx
+Triobimet 2 Tablet ER,Antidiabetic,Corona Remedies Pvt Ltd,18.42,Rx
+Invog 0.3mg Tablet,Antidiabetic,Med Manor Organics Pvt Ltd,9.8,Rx
+Olglimide 2mg Tablet,Antidiabetic,Olcare Laboratories,3.22,Rx
+Voglimin-GM 1 Tablet SR,Antidiabetic,Orris Pharmaceuticals,9.9,Rx
+Glimiprex 3 Tablet,Antidiabetic,Aristo Pharmaceuticals Pvt Ltd,7.9,Rx
+Q Vilda M 500mg/50mg Tablet,Antidiabetic,Zinnia Life Sciences,8.0,Rx
+Zoryl-M 2 Tablet PR,Antidiabetic,Intas Pharmaceuticals Ltd,14.4,Rx
+Vildact 50mg Tablet,Antidiabetic,Cognitive Life Sciences Ltd,11.0,Rx
+Gimi 2mg Tablet,Antidiabetic,Plenum Biotech,5.44,Rx
+Glimbell M 1mg/500mg Tablet SR,Antidiabetic,Nimbles Biotech Pvt Ltd,4.3,Rx
+Formistar G 2mg/500mg Tablet ER,Antidiabetic,Iva Healthcare Pvt. Ltd.,4.7,Rx
+Tenlifast M 1000mg/20mg Tablet,Antidiabetic,Invision Medi Sciences Pvt Ltd,17.0,Rx
+Glorimet Forte G1 Tablet,Antidiabetic,Oaknet Healthcare Pvt Ltd,8.36,Rx
+Dartmet 1gm Tablet SR,Antidiabetic,Addii Biotech Pvt Ltd,3.71,Rx
+Glipsov M 20/500 Tablet SR,Antidiabetic,Emcure Pharmaceuticals Ltd,15.71,Rx
+Triobimet 1mg/500mg/15mg Tablet ER,Antidiabetic,Corona Remedies Pvt Ltd,12.95,Rx
+Metforise 500mg Tablet,Antidiabetic,Carise Pharmaceuticals Pvt Ltd,2.0,Rx
+Zoryl MP 1 Forte Tablet SR,Antidiabetic,Intas Pharmaceuticals Ltd,11.35,Rx
+Debiliptin M 500mg/20mg Tablet SR,Antidiabetic,Leeford Healthcare Ltd,13.0,Rx
+Glimbite-M2 Tablet SR,Antidiabetic,Stenkem Molecules Pvt Ltd,6.5,Rx
+Voglidase-M Forte Tablet SR,Antidiabetic,East West Pharma,9.5,Rx
+Glimesoft M1 1mg/500mg Tablet,Antidiabetic,Pillix Healthcare,4.04,Rx
+Sugowell SR M1 Tablet,Antidiabetic,Meditouch Wellness,4.0,Rx
+Pioplus 2 Tablet SR,Antidiabetic,Systopic Laboratories Pvt Ltd,6.1,Rx
+Gmp 1 Tablet,Antidiabetic,Ozone Pharmaceuticals Ltd,3.65,Rx
+Glimisave M 3 Tablet PR,Antidiabetic,Eris Lifesciences Ltd,12.0,Rx
+Cilvoryl 1mg Tablet,Antidiabetic,Vasu Organics Pvt Ltd,3.95,Rx
+Endopride PG 2mg/500mg/15mg Tablet SR,Antidiabetic,Radico Remedies,5.0,Rx
+Raastel 80 Tablet,Cardiovascular,Metalis Lifesciences Pvt Ltd,11.25,Rx
+Rosca 20mg Tablet,Cardiovascular,Genix Pharma Ltd,14.0,Rx
+Lotan 25mg Tablet,Cardiovascular,Taurus Laboratories Pvt Ltd,1.39,Rx
+Dotstat 5mg Tablet,Cardiovascular,Three Dots Lifescience,4.95,Rx
+Alvitel 80mg Tablet,Cardiovascular,Granmed Pharma,9.8,Rx
+Telitoss-H 40mg/12.5mg Tablet,Cardiovascular,Novalab Healthcare Pvt Ltd,8.5,Rx
+Megmator D3 10mg/1000IU Tablet,Cardiovascular,Ridhima Biocare,8.68,Rx
+LR H Tablet,Cardiovascular,Zydus Cadila,7.0,Rx
+Atodin 20mg Tablet,Cardiovascular,Divine Lifecare Pvt Ltd,5.5,Rx
+Betarun 50mg Tablet XL,Cardiovascular,Lenimen Biotech,6.0,Rx
+Acrostatin 10mg Tablet,Cardiovascular,Acron Pharmaceuticals,4.5,Rx
+Roztel-H 40mg/12.5mg Tablet,Cardiovascular,Rouzel Pharma,9.9,Rx
+Amlong CT Tablet,Cardiovascular,Micro Labs Ltd,6.5,Rx
+Telster CT 80mg/12.5mg Tablet,Cardiovascular,Jarun Pharmaceuticals,15.0,Rx
+Rosarex 5mg Tablet,Cardiovascular,Dermarex HealthCare India Pvt. Ltd.,5.0,Rx
+Vistatel H 40mg/12.5mg Tablet,Cardiovascular,Kanvista Drugs Pvt Ltd,5.6,Rx
+Telpiwin AM 40mg/5mg Tablet,Cardiovascular,Clipwin Pharmaceuticals,8.5,Rx
+Riocard 100mg Tablet ER,Cardiovascular,Radius Drug Pvt Ltd,10.0,Rx
+Losapot 50 Tablet,Cardiovascular,Q Check Speciality Care,4.98,Rx
+Bilopine 5 Tablet,Cardiovascular,Bi-Cure Remedies,3.01,Rx
+Ramveda-H 2.5mg/12.5mg Tablet,Cardiovascular,Vidakem Lifesciences Pvt Ltd,6.0,Rx
+Indap AT 50 mg/1.25 mg Tablet,Cardiovascular,Orchid Chemicals & Pharmaceuticals Ltd,4.86,Rx
+Losateb H 50mg/12.5mg Tablet,Cardiovascular,Nukind Healthcare Pvt Ltd,8.0,Rx
+Lostan 50 Tablet,Cardiovascular,Auspharma Private Limited,4.36,Rx
+Xoten C 10mg/75mg Tablet,Cardiovascular,Alteus Biogenics Pvt Ltd,11.9,Rx
+Metwin XL 50mg Tablet,Cardiovascular,Concur Pharmaceuticals Pvt.Ltd,5.96,Rx
+Metosol 25 Tablet,Cardiovascular,Saaol Pharma Pvt Ltd     ,25.0,Rx
+Hartek 5 Tablet,Cardiovascular,Brilliant Lifesciences Pvt Ltd,16.8,Rx
+Conivas 10mg Tablet,Cardiovascular,Novalab Healthcare Pvt Ltd,5.76,Rx
+Telsicap H 40mg/12.5mg Tablet,Cardiovascular,Biofield Pharma,9.0,Rx
+Metordil-XL 50 Tablet,Cardiovascular,Prevego Healthcare & Research Private Limited,6.33,Rx
+Ramivaz 5mg Tablet,Cardiovascular,Edinburgh Pharmaceuticals,7.4,Rx
+Atorma 20mg Tablet,Cardiovascular,MPC Pharmaceuticals,10.5,Rx
+Thanktel AM Tablet,Cardiovascular,Nexina Life Sciences Pvt Ltd,9.0,Rx
+Rami Race 5 Tablet,Cardiovascular,Knoll Pharmaceuticals Ltd,9.73,Rx
+Lodens 20mg Tablet,Cardiovascular,Anthem Biopharma,8.1,Rx
+Atorin 40mg Tablet,Cardiovascular,Medley Pharmaceuticals,20.98,Rx
+Dpine AT 5mg/50mg Tablet,Cardiovascular,Dr. Edwin Lab,5.5,Rx
+Atorfirst 10mg Tablet,Cardiovascular,Sinsan Pharmaceuticals,8.6,Rx
+Telsaan 20mg Tablet,Cardiovascular,Saan Labs,3.71,Rx
+Mepra 40mg Injection,Gastrointestinal,Catholicon Pharmaceuticals Pvt Ltd,95.0,Rx
+Nashpro Tablet,Gastrointestinal,Avinash Health Products Pvt Ltd,5.75,OTC
+Spntop-DSR Capsule,Gastrointestinal,Spencure Biotech Pvt. Ltd.,7.9,OTC
+Nosotron 8 Tablet MD,Gastrointestinal,Superlative Healthcare,7.9,OTC
+Sudhapan-DSR Capsule,Gastrointestinal,Sudha Lifesciences Pvt Ltd,11.8,OTC
+Patrova-D 10mg/40mg Tablet,Gastrointestinal,Scott Edil Pharmacia Ltd,8.5,OTC
+Ossum 20mg Capsule,Gastrointestinal,Zenacts Pharma,4.5,OTC
+Viltipan 40mg Tablet,Gastrointestinal,Viltis Pharma Private Limited,8.0,OTC
+Pansoft 40mg Tablet,Gastrointestinal,Mint Life Sciences Pvt Ltd,5.7,OTC
+Emistal 2mg Injection,Gastrointestinal,Anthus Pharmaceuticals Pvt Ltd,6.14,Rx
+Rabizer-D 10mg/20mg Tablet,Gastrointestinal,Axter Pharmaceuticals Pvt Ltd,5.0,OTC
+Instarab D 30mg/20mg Capsule SR,Gastrointestinal,Curewin Hylico Pharma Pvt Ltd,5.0,OTC
+Emesafe 2mg Injection,Gastrointestinal,Wallace Pharmaceuticals Pvt Ltd,8.75,Rx
+Rabewun D 30mg/20mg Capsule,Gastrointestinal,Wunderz Pharmaceuticals,5.8,OTC
+Panton-DSR Capsule,Gastrointestinal,Fantabulous Pharma,8.0,OTC
+Ganaton Total Capsule SR,Gastrointestinal,Abbott,38.46,OTC
+Munipra D 30mg/40mg Capsule SR,Gastrointestinal,Medimind Drugs and Chemicals,7.75,OTC
+Okrab DSR Capsule,Gastrointestinal,Insta Care Lifescience,10.5,OTC
+Rabe D 10 mg/20 mg Tablet,Gastrointestinal,Medial Pharma Ltd,6.6,OTC
+Blazex D 10mg/40mg Tablet,Gastrointestinal,Metamorf Lifesciences,7.0,OTC
+Opraz 20mg Capsule,Gastrointestinal,Biosys Medisciences,4.0,OTC
+Omiast 20mg Capsule,Gastrointestinal,Carenix Bio Pharma Pvt. Ltd.,3.2,OTC
+Scom 20mg Capsule,Gastrointestinal,Pharma Drugs & Chemicals,2.15,OTC
+Omzaris-D Capsule,Gastrointestinal,Azaris Pharma,6.0,OTC
+Tripanta D 30mg/40mg Capsule SR,Gastrointestinal,Phycrus Remedies,8.9,OTC
+Drabe D 30mg/20mg Capsule SR,Gastrointestinal,Dr. D Pharma,9.0,OTC
+Rappin 20mg Tablet,Gastrointestinal,Alred Health Care Ltd,6.5,OTC
+Pantokem 40 Tablet,Gastrointestinal,Prekem Pharmaceuticals Pvt Ltd,6.5,OTC
+Rupant 40mg Injection,Gastrointestinal,Anuveda Life Sciences Pvt Ltd,46.8,Rx
+Soltron 4mg Tablet DT,Gastrointestinal,Lifepure Labs Pvt Ltd,4.7,OTC
+Zolita 40mg Tablet,Gastrointestinal,Astronia Life Sciences,5.1,OTC
+Zopen 40mg Tablet,Gastrointestinal,Kentreck Laboratories Pvt Ltd,5.4,OTC
+Euto D 10mg/40mg Tablet,Gastrointestinal,Zedip Formulations,4.5,OTC
+Rov D 30mg/20mg Capsule SR,Gastrointestinal,Vrovwen Biologics Pvt Ltd,8.5,OTC
+Rabed 20mg Tablet,Gastrointestinal,Jasco Labs Pvt Ltd,4.6,OTC
+Rabrocid-DSR Capsule,Gastrointestinal,Biotric Healthcare Pvt Ltd,10.0,OTC
+Supraz 40mg Injection,Gastrointestinal,Swizing Biosciences,140.0,Rx
+Temaz 20mg Capsule,Gastrointestinal,Alpic Remedies Ltd,3.9,OTC
+Dialoz D 10mg/20mg Capsule SR,Gastrointestinal,Dial Pharmaceuticals Pvt Ltd,7.0,OTC
+Letop D 30mg/40mg Capsule SR,Gastrointestinal,Lepidus Pharma India Pvt Ltd,9.0,OTC
+Cotrip-H Tablet,Neurological,Consern Pharma Limited,3.6,Rx
+Anxiclo 0.5mg Tablet MD,Neurological,Apostle Remedies,2.0,Rx
+Lonazit Plus 0.5mg/10mg Tablet,Neurological,Progressive Life Care,9.0,Rx
+Gabapoint NT 400mg/10mg Tablet,Neurological,Erzek Pharmaceuticals Pvt Ltd,27.0,Rx
+Latilin 10mg Tablet,Neurological,La Pharmaceuticals,1.46,Rx
+Zolorest-FX Tablet,Neurological,Focus Healthcare,6.8,Rx
+Loprazam Forte Tablet,Neurological,Hetero Healthcare Limited,14.0,Rx
+Clonarey 2mg Tablet,Neurological,Wallrey Pharmaceuticals,5.9,Rx
+Ecitelo 5mg Tablet,Neurological,Mankind Pharma Ltd,5.07,Rx
+Yescam 10mg Tablet,Neurological,Exelife Biotech Pvt Ltd,8.0,Rx
+Gabagest NT 400mg/10mg Tablet,Neurological,Medmom Pharmaceuticals LLP,19.8,Rx
+Halotil 10mg Tablet,Neurological,Ivy Healthcare,7.2,Rx
+Tricita 5mg Tablet,Neurological,Jagsam Pharma,5.6,Rx
+Estavin-Plus 0.5mg/10mg Tablet,Neurological,Gavins Pharma Pvt Ltd,11.0,Rx
+Prebag-NT Tablet,Neurological,AAR ESS Remedies Pvt Ltd,29.0,Rx
+Nexito LS Tablet,Neurological,Sun Pharmaceutical Industries Ltd,14.7,Rx
+Zepam 0.5mg Tablet MD,Neurological,Psycormedies,3.14,Rx
+Depnuf 40mg Capsule,Neurological,Neuracle Lifesciences Pvt Ltd,5.1,Rx
+ONA 0.25mg Tablet MD,Neurological,D D Pharmaceuticals,1.45,Rx
+Juvigen-G 300mg/500mcg Tablet,Neurological,Zenacts Pharma,10.35,Rx
+Estilonil 10mg Tablet,Neurological,Global Care,7.2,Rx
+Gably 75mg Tablet,Neurological,Diligence Pharma,8.2,Rx
+MD Fast 10mg Tablet,Neurological,Unistar Biotech Ltd,8.24,Rx
+StayHappi Fluoxetine 20mg Capsule,Neurological,Sarvagunaushdhi Pvt Ltd,0.89,Rx
+Coxito-S 10 Tablet,Neurological,Kivi Labs Ltd,9.05,Rx
+Jolivel 5mg Tablet,Neurological,Torrent Pharmaceuticals Ltd,3.72,Rx
+Seglin NT 75mg/10mg Tablet,Neurological,Seguro Lifesciences Private Limited,18.8,Rx
+Neuron M 75mg Tablet,Neurological,AGM Biotec,9.52,Rx
+DR Best Clonazepam 0.5 Tablet,Neurological,DR Best pharmaceuticals Pvt Ltd,2.0,Rx
+Nervibrain 100mg Tablet,Neurological,KC Laboratories,12.8,Rx
+Talo 10 Tablet,Neurological,Rishab Healthcare pvt. Ltd.,5.5,Rx
+Cyrator 20mg Tablet,Neurological,Cyrus Remedies,13.0,Rx
+Clozmet 1 MD Tablet,Neurological,Emocare,3.9,Rx
+Zecita Plus 10 Tablet,Neurological,Vyomax Lifesciences Pvt Ltd,9.8,Rx
+Eminaz 0.25mg Tablet,Neurological,Emenox Healthcare,1.9,Rx
+Dedep 20mg Tablet,Neurological,S P Pharma,2.11,Rx
+Aknerv-G Tablet,Neurological,Akmed Biotech,11.5,Rx
+Priux 75mg Capsule,Neurological,Ajanta Pharma Ltd,12.5,Rx
+Censpram 20 Tablet,Neurological,USV Ltd,13.0,Rx
+Lukobal-NT Tablet,Neurological,Henin Lukinz Pvt Ltd,15.3,Rx
+Thyrid 50mcg Tablet,Hormonal,In Med Therapeutics,1.09,Rx
+Euthyrox 75 Tablet,Hormonal,Merck Ltd,1.61,Rx
+Rexusnorm 100 Tablet,Hormonal,Rexus Healthcare,1.28,Rx
+Sunthyroid 100mcg Tablet,Hormonal,Akumentis Healthcare Ltd,24.75,Rx
+Healtroxin 125mcg Tablet,Hormonal,Healing Pharma India Pvt Ltd,1.61,Rx
+Thyronorm 25mcg Tablet,Hormonal,Abbott,1.62,Rx
+Thyroup 50 Tablet,Hormonal,Lupin Ltd,1.22,Rx
+Thyramax 75mcg Tablet,Hormonal,Astonea Labs Private Limited,1.31,Rx
+Thyramax 150mcg Tablet,Hormonal,Astonea Labs Private Limited,1.55,Rx
+L-Thyro 25 Tablet,Hormonal,Zargan Healthcare,1.11,Rx
+Thyronorm 88mcg Tablet,Hormonal,Abbott,1.9,Rx
+Thyrocut 125 Tablet,Hormonal,Care Formulation Labs Pvt Ltd,1.72,Rx
+Thyronil 150mcg Tablet,Hormonal,East West Pharma,1.49,Rx
+Thyrocare 50mcg Tablet,Hormonal,Elder Pharmaceuticals Ltd,0.96,Rx
+Thyroban 50mcg Tablet,Hormonal,Bangalore Antibiotics & Biologicals Pvt Ltd,1.08,Rx
+Thyrotreat 100mcg Tablet,Hormonal,Treatwell Pharma,1.17,Rx
+Euthyrox 100 Tablet,Hormonal,Merck Ltd,1.47,Rx
+Thyroblu 25mcg Tablet,Hormonal,Bluewaterresearch,1.07,Rx
+Thyromed 75mcg Tablet,Hormonal,Comed Chemicals Ltd,1.45,Rx
+Thyrocloud 75 Tablet,Hormonal,Mendcure Life Sciences Pvt Ltd,1.4,Rx
+Thyrox 75 Tablet,Hormonal,Macleods Pharmaceuticals Pvt Ltd,1.61,Rx
+Thyrolix 100mcg Tablet,Hormonal,Elixir Life Care Pvt Ltd,1.2,Rx
+Thyroquik 88mcg Tablet,Hormonal,Vats Biotech Pvt Ltd,1.37,Rx
+Thyrosoft 50mcg Tablet,Hormonal,Hauz Pharma Pvt Ltd,1.03,Rx
+Thyrox 12.5 Tablet,Hormonal,Macleods Pharmaceuticals Pvt Ltd,1.67,Rx
+Thyromed 100mcg Tablet,Hormonal,Comed Chemicals Ltd,1.33,Rx
+Thyroup 175mcg Tablet,Hormonal,Lupin Ltd,1.19,Rx
+Lethyrox 100 Tablet,Hormonal,Intas Pharmaceuticals Ltd,1.49,Rx
+Thyrozip 75mcg Tablet,Hormonal,Remedial Healthcare,1.58,Rx
+Thyropic 100mcg Tablet,Hormonal,Puremed Biotech,1.26,Rx
+Thyrosoft 25mcg Tablet,Hormonal,Hauz Pharma Pvt Ltd,1.25,Rx
+Eltroxin 75mcg Tablet,Hormonal,Glaxo SmithKline Pharmaceuticals Ltd,1.61,Rx
+Thyrox 150 Tablet,Hormonal,Macleods Pharmaceuticals Pvt Ltd,1.92,Rx
+Thyramax 50mcg Tablet,Hormonal,Astonea Labs Private Limited,1.04,Rx
+Thyroprime 75mcg Tablet,Hormonal,Primus Remedies Pvt Ltd,1.37,Rx
+L-Thyro 75 Tablet,Hormonal,Zargan Healthcare,1.34,Rx
+Euthyroid 100 Tablet,Hormonal,Akumentis Healthcare Ltd,32.5,Rx
+Thyroup 150 Tablet,Hormonal,Lupin Ltd,1.9,Rx
+Thyrine 100mcg Tablet,Hormonal,Olcare Laboratories,1.3,Rx
+Tusnov-L Syrup,Respiratory,NovoLilly Pharmaceutical Pvt Ltd,0.98,OTC
+Asthacure Plus Tablet,Respiratory,Swiss Pharma Pvt Ltd,0.95,OTC
+Nebzmart FB 1mg Smartules 2ml,Respiratory,Glenmark Pharmaceuticals Ltd,61.5,OTC
+Ibinide 200 Nexcap,Respiratory,Indiabulls pharmaceutical ltd,5.73,OTC
+Triballi LS Syrup,Respiratory,Ancient Life Sciences,0.73,OTC
+Arnikof LS Syrup,Respiratory,Arnee Life Science,0.85,OTC
+Gla Syrup,Respiratory,Ashwa Healthcare,0.68,OTC
+Alrocuf LS Syrup,Respiratory,Alrosa Pharmaceuticals Pvt Ltd,0.69,OTC
+Kufstil Syrup,Respiratory,SBS Biosciences,0.82,OTC
+Durabec Breath Inhaler,Respiratory,Raptakos Brett & Co Ltd,6.53,OTC
+Nishkuf-LS Syrup,Respiratory,Ronish Bioceuticals,0.75,OTC
+Flozone 6mcg/250mcg Inhaler,Respiratory,Systacare Remedies,3.88,OTC
+Cheston LS Syrup Sugar Free,Respiratory,Cipla Ltd,0.95,OTC
+Formicort-FT Capsule,Respiratory,Menrik Biomerge Pvt Ltd,11.73,OTC
+Combimist-L CFC Free Inhaler,Respiratory,Zydus Cadila,1.65,OTC
+Coffson LS Syrup,Respiratory,Alson Pharma Private Limited,0.75,OTC
+Budesule 0.5mg Respules,Respiratory,Windlas Biotech Ltd,12.0,OTC
+Formonide 400 Novocart,Respiratory,Zydus Cadila,5.11,OTC
+Formonide 100 Inhaler,Respiratory,Zydus Cadila,2.34,OTC
+Salbuton 4 Tablet,Respiratory,PLG Pharmaceutical,4.0,OTC
+Pulmosmart 400 Pulmicaps,Respiratory,Alkem Laboratories Ltd,6.67,OTC
+Duojet LD 0.63mg/500mcg Respules,Respiratory,Brinton Pharmaceuticals Pvt Ltd,6.3,OTC
+Etabol Tablet,Respiratory,Hamax Pharmaceuticals,1.2,OTC
+Ambrosal LS Syrup,Respiratory,Capri Pharmaceuticals,0.72,OTC
+Formonide 6mcg/100mcg Respicap,Respiratory,Zydus Cadila,4.71,OTC
+Duolin Forte Inhaler,Respiratory,Cipla Ltd,1.96,OTC
+Vexicof LS Syrup,Respiratory,Vexilla Healthcare,1.03,OTC
+Magnakof-LS Syrup,Respiratory,Mankind Pharma Ltd,1.09,OTC
+Uniresp 300mg Tablet,Respiratory,Algen Healthcare Limited,3.77,OTC
+Cofsy LS Oral Drops,Respiratory,Skymax Life Science Pvt Ltd,3.47,OTC
+Foracort Inhaler 200,Respiratory,Cipla Ltd,3.33,OTC
+Aqukof-LS Syrup,Respiratory,Aquver Pharma Private Limited,0.89,OTC
+Aerozest 0.31mg Respules (2.5 ml each),Respiratory,Macleods Pharmaceuticals Pvt Ltd,2.82,OTC
+Levobrex Kid Syrup,Respiratory,Agex Laboratories Pvt Ltd,1.12,OTC
+Pediakof LS Syrup,Respiratory,Medmate Life Science Private,1.09,OTC
+Respire Syrup,Respiratory,Meditouch Wellness,0.9,OTC
+Entcof-LS Syrup,Respiratory,Gladstone Pharma India Pvt Ltd,1.16,OTC
+Fluticort F 6mcg/100mcg Rotacap,Respiratory,Macleods Pharmaceuticals Pvt Ltd,5.57,OTC
+Unicontin-E 400 Tablet CR,Respiratory,Modi Mundi Pharma Pvt Ltd,21.6,OTC
+Budesal 1mg Respule 2ml,Respiratory,Cipla Ltd,56.35,OTC
+Wytrol Capsule,Supplement,Pfizer Ltd,17.55,OTC
+Bio Cal-D 1000mg/200IU Tablet,Supplement,Bio Drugs Laboratories Pvt Ltd,2.38,OTC
+Axifer 100mg Injection,Supplement,Medihealth Lifesciences Pvt. Ltd.,80.0,Rx
+Alferon XT 20mg Injection,Supplement,Alarius Healthcare,205.0,Rx
+Thiamo 100mg Injection,Supplement,Remark Healthcare,28.5,Rx
+NVM-LC Tablet,Supplement,Seagull Pharmaceutical Pvt Ltd,18.0,OTC
+Caldovis 500mg Capsule,Supplement,Salvador Visiontech,12.0,OTC
+Ferofe 100mg Injection,Supplement,Alive Healthcare,9.05,Rx
+Richcalvit Tablet,Supplement,CL Reddy Health Care,6.0,OTC
+New Sunbless C Tablet,Supplement,Zydus Cadila,14.14,OTC
+Redion 100mg Injection,Supplement,Innovative Pharmaceuticals,45.0,Rx
+Zincobus 100mg Injection,Supplement,Globus Remedies Ltd,250.0,Rx
+Uniron S 100mg Injection,Supplement,Unijules Life Science Ltd,245.0,Rx
+Folifred Tablet,Supplement,Fredun Pharmaceuticals Limited,1.5,OTC
+H 2 T-Active Injection,Supplement,Uvkan Healthcare Pvt Ltd,78.0,Rx
+Rolifol-Dha Softgel Capsule,Supplement,Rollick Healthcare Pvt Ltd,14.33,OTC
+Hibone-D Oral Drops,Supplement,Salsim Pharma Pvt Ltd,3.27,OTC
+Dobce 500mg Capsule,Supplement,Dermakare Pharmaceuticals Pvt Ltd,13.2,OTC
+Hemifill 50mg Injection,Supplement,Remedial Healthcare,73.25,Rx
+Vinoferon-S 5 Injection,Supplement,Vintas Pharmaceuticals Pvt. Ltd.,46.49,Rx
+Sioneuron Forte Injection,Supplement,Albert David Ltd,3.62,Rx
+Ferhance Tablet,Supplement,Hegde and Hegde Pharmaceutical LLP,9.4,OTC
+Vezfer 100mg Injection,Supplement,Vesnik Molecules,49.8,Rx
+Irovis Injection,Supplement,Dolvis Bio Pharma Pvt Ltd,56.5,Rx
+Trinurosol HP 1000mg Injection,Supplement,Wockhardt Ltd,11.1,Rx
+Feromaxx 100mg Injection,Supplement,Maxx Farmacia (India) Lip,47.0,Rx
+Torget Plus 10 Tablet,Supplement,Zydus Cadila,11.42,OTC
+Fenora-S 100mg Injection,Supplement,Neiss Labs Pvt Ltd,262.0,Rx
+Imunofer 100mg Injection,Supplement,Tamman Titoe Pharma Pvt Ltd,50.2,Rx
+Asthim 50mg Injection,Supplement,Aspen Pharma,5.4,Rx
+Ferixym 500mg Injection,Supplement,Zydus Cadila,1830.0,Rx
+Ostabar Tablet,Supplement,JVG Pharmaceuticals,12.9,OTC
+I Ten 100mg Injection,Supplement,Feron Healthcare Pvt Ltd,52.2,Rx
+Fastovorin 50mg Injection,Supplement,Alkem Laboratories Ltd,325.0,Rx
+Imec 20mg Injection,Supplement,I.I.F.A Health Care,54.6,Rx
+Dyferol 100mg Injection,Supplement,Medna Biotech Private Limited,248.0,Rx
+Calhunt Tablet,Supplement,Medgrow Health Care,9.4,OTC
+Nurox Injection,Supplement,Insta Care Lifescience,52.0,Rx
+CV 60K Softgel Capsule,Supplement,Carevale Pharmaceuticals,24.12,OTC
+Carbova 50mg Injection,Supplement,Gnova Biotech,70.5,Rx
+Betsalic Lotion,Dermatological,East West Pharma,2.56,OTC
+Momenta 0.10% Cream,Dermatological,NuLife Pharmaceuticals,28.0,OTC
+Solubin C Eye Drop,Dermatological,Perk Pharmaceuticals Ltd,2.75,OTC
+Danket Shampoo,Dermatological,Dermo Care Laboratories,3.24,OTC
+Decdan B 4mg/ml Injection,Dermatological,Wockhardt Ltd,4.67,Rx
+Kcz Soap,Dermatological,Nitro Organics,1.67,OTC
+Ketza Soap,Dermatological,Pluzine Healthcare,1.07,OTC
+Betaderm Z Cream,Dermatological,P and  P Dermaceuticals Pvt Ltd,2.93,OTC
+Clc N Cream,Dermatological,Symbiosis Pharmaceuticals Pvt Ltd,3.55,OTC
+Clorap S Ointment,Dermatological,Rapross Pharmaceuticals Pvt Ltd,6.32,OTC
+Alerkim Forte 1mg Tablet,Dermatological,Kim Lab,0.67,OTC
+Keygraf 1 Capsule,Dermatological,Anthem Biopharma,41.09,OTC
+Finuris Cream,Dermatological,Dr Kumars Pharmaceuticals,9.58,OTC
+Betagel,Dermatological,Micro Labs Ltd,0.65,OTC
+Canazole Dusting Powder,Dermatological,Lupin Ltd,1.1,OTC
+Tcoglob 5mg Capsule,Dermatological,Globela Pharma Pvt Ltd,170.0,OTC
+Clolite S Lotion,Dermatological,La Med India,3.06,OTC
+Clofresh GM Neo Cream,Dermatological,Smart Laboratories Pvt Ltd,4.5,OTC
+Clobesol-N Cream,Dermatological,Kiansons Formulation Pvt Ltd,3.33,OTC
+Clotax S Cream,Dermatological,Biocorp Life Sciences Pvt Ltd,3.65,OTC
+Zolyn Dusting Powder,Dermatological,Lynderma Pharmaceuticals,1.25,OTC
+Sureket Cream,Dermatological,Surewin Healthcare,5.4,OTC
+Candid KZ Soap,Dermatological,Glenmark Pharmaceuticals Ltd,2.26,OTC
+Apodruff Shampoo,Dermatological,Apotex Lifesciences,1.92,OTC
+Clobeta GM Cream,Dermatological,Laborate Pharmaceuticals India Ltd,5.59,OTC
+Keto Cream,Dermatological,Med Manor Organics Pvt Ltd,7.0,OTC
+Kezol Lotion,Dermatological,West-Coast Pharmaceutical Works Ltd,1.83,OTC
+Praisvate S 6 Ointment,Dermatological,Praise Pharma,5.0,OTC
+Monovate Lotion,Dermatological,Mefro Pharmaceuticals Pvt Ltd,1.3,OTC
+Momeflo Nasal Spray,Dermatological,Lupin Ltd,39.2,OTC
+Moldex Ointment,Dermatological,Medix Biocare,4.17,OTC
+Ketokem Medicated Anti-fungal Soap,Dermatological,Alkem Laboratories Ltd,1.47,OTC
+Canazole 1% Ear Drop,Dermatological,Lupin Ltd,1.5,OTC
+Salobet Ointment,Dermatological,Mohrish Pharmaceuticals,5.25,OTC
+Ketonol Scalp Solution,Dermatological,Nanz Med Science Pharma Ltd,2.42,OTC
+Geoderm G Cream,Dermatological,Geolife Sciences,2.33,OTC
+Xerofung-C Dusting Powder,Dermatological,Dermajoint India,2.99,OTC
+Momocort 0.1% Cream,Dermatological,MDC Pharmaceuticals  Pvt Ltd,4.67,OTC
+Clonova 0.05% Cream,Dermatological,Rhine Biogenics Pvt Ltd,2.8,OTC
+Clonate Lotion,Dermatological,Hegde and Hegde Pharmaceutical LLP,6.8,OTC

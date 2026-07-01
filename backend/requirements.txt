@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pandas
+numpy
+faker
+python-multipart
+python-jose[cryptography]
+bcrypt
+# pytesseract and Pillow are optional - needed only for local OCR prescription upload.
+# Tesseract is a system binary that isn't pre-installed on Railway's free tier.
+# The app works without it - OCR falls back to manual entry gracefully.
+# To enable OCR locally: pip install pytesseract Pillow  (+ install Tesseract separately)

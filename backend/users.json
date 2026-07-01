@@ -1,0 +1,145 @@
+{
+  "ph001": {
+    "username": "ph001",
+    "password_hash": "$2b$12$T.HQLP27DM3mUeFSkWcvV.aMV7StA5gFveG5TXM2QH6CcDsjjypUK",
+    "role": "pharmacy",
+    "pharmacy_id": "PH001",
+    "pharmacy_name": "Andheri MedPlus",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": "2026-06-30T05:58:52.687961+00:00",
+    "last_login_ip": "127.0.0.1",
+    "active": true
+  },
+  "ph002": {
+    "username": "ph002",
+    "password_hash": "$2b$12$K5dt8szDm7he/jrl9uJgX.PBCeYKXcI7q7roCPXe.jC9sioMycJX.",
+    "role": "pharmacy",
+    "pharmacy_id": "PH002",
+    "pharmacy_name": "Bandra Apollo Pharmacy",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph003": {
+    "username": "ph003",
+    "password_hash": "$2b$12$uRL9IF8ynrpH.aJVdMVQ6Okpld10Ml2sR4MvGABy8Ddr8oigVp7vK",
+    "role": "pharmacy",
+    "pharmacy_id": "PH003",
+    "pharmacy_name": "Dadar MedPlus",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph004": {
+    "username": "ph004",
+    "password_hash": "$2b$12$CjJeobaxLKzdo9vRqyskV.pW3acxaHWvetwH7owlohcFTt7tW1GwC",
+    "role": "pharmacy",
+    "pharmacy_id": "PH004",
+    "pharmacy_name": "Powai MedPlus",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph005": {
+    "username": "ph005",
+    "password_hash": "$2b$12$oXWsO9.3vEjx9QdSWy6bIOp4A0eHpLTR05aXEasa1pif7PdaIHR2K",
+    "role": "pharmacy",
+    "pharmacy_id": "PH005",
+    "pharmacy_name": "Chembur MedPlus",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph006": {
+    "username": "ph006",
+    "password_hash": "$2b$12$EfZnruFmTcS.xVSgq0WtBOwx7bRNBSVNzTpvQBa/2YPu8sXe5vvFS",
+    "role": "pharmacy",
+    "pharmacy_id": "PH006",
+    "pharmacy_name": "Borivali Apollo Pharmacy",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph007": {
+    "username": "ph007",
+    "password_hash": "$2b$12$/KYHWCYPVrs/r2VqYo0p3uCfiXT7tAjB31.kNQJVu.Em4xBuSN15a",
+    "role": "pharmacy",
+    "pharmacy_id": "PH007",
+    "pharmacy_name": "Thane City Chemist",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph008": {
+    "username": "ph008",
+    "password_hash": "$2b$12$c5CYjl8VQ60XPHI4zTjY8u7egsIOqXgmWaKZc/7FHssBVenC3lyju",
+    "role": "pharmacy",
+    "pharmacy_id": "PH008",
+    "pharmacy_name": "Goregaon Apollo Pharmacy",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph009": {
+    "username": "ph009",
+    "password_hash": "$2b$12$hYi1zm6/IYSL/IHfDP/oBuyBaUxb4meEvOEf0lPs76ZbBOvUsDtDe",
+    "role": "pharmacy",
+    "pharmacy_id": "PH009",
+    "pharmacy_name": "Malad City Chemist",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph010": {
+    "username": "ph010",
+    "password_hash": "$2b$12$.ChSzXDRgB8SiiwWo6TvpOvtNG9sG0gfq37h89JH74vDHu9ICfW7S",
+    "role": "pharmacy",
+    "pharmacy_id": "PH010",
+    "pharmacy_name": "Vile Parle Generic Aid",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph011": {
+    "username": "ph011",
+    "password_hash": "$2b$12$zl5XYzAID5EE0SZwnFm0Luk6wTzWF80qFe3hcySOS9jEN7OkHhbZu",
+    "role": "pharmacy",
+    "pharmacy_id": "PH011",
+    "pharmacy_name": "Kurla MedPlus",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "ph012": {
+    "username": "ph012",
+    "password_hash": "$2b$12$CeCEK9u97OwhlGSArVELxedPZjGo0eTBALDiuJrNxqZLmwmkFH7Hm",
+    "role": "pharmacy",
+    "pharmacy_id": "PH012",
+    "pharmacy_name": "Worli Generic Aid",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": null,
+    "last_login_ip": null,
+    "active": true
+  },
+  "admin": {
+    "username": "admin",
+    "password_hash": "$2b$12$fc3NJziuQgqP9naufsRt2ecR7EnvXFWUIWvzu7X.gwMb7AQpvH8NK",
+    "role": "admin",
+    "pharmacy_id": null,
+    "pharmacy_name": "Head Office",
+    "created_at": "2026-06-30T05:58:40.203588+00:00",
+    "last_login_at": "2026-06-30T05:58:52.380852+00:00",
+    "last_login_ip": "127.0.0.1",
+    "active": true
+  }
+}

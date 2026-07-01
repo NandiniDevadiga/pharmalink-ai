@@ -1,0 +1,13 @@
+pharmacy_id,pharmacy_name,area,latitude,longitude,address,pharmacist_name,contact_number,open_time,close_time
+PH001,Andheri MedPlus,Andheri,19.04589,72.985871,"063, Uppal Chowk, Andheri, Mumbai",Ira Gopal,+91 7081946048,08:00,22:00
+PH002,Bandra Apollo Pharmacy,Bandra,19.131679,72.901378,"72/60, Kata Marg, Bandra, Mumbai",Balvan Koshy,+91 7731428289,08:00,22:00
+PH003,Dadar MedPlus,Dadar,18.993444,72.795139,"24, Pal Ganj, Dadar, Mumbai",Varenya Dube,+91 9217481482,08:00,22:00
+PH004,Powai MedPlus,Powai,18.96994,72.965582,"H.No. 645, Dutta Chowk, Powai, Mumbai",Arya Nagar,+91 8934965302,08:00,22:00
+PH005,Chembur MedPlus,Chembur,19.100268,72.927637,"H.No. 297, Ray Road, Chembur, Mumbai",Vrinda Lal,+91 7097622280,08:00,22:00
+PH006,Borivali Apollo Pharmacy,Borivali,18.96094,72.990478,"381, Raman Ganj, Borivali, Mumbai",Kala Samra,+91 7762376237,08:00,22:00
+PH007,Thane City Chemist,Thane,19.155786,72.808661,"H.No. 87, Hans Chowk, Thane, Mumbai",Rushil Padmanabhan,+91 7086983563,08:00,22:00
+PH008,Goregaon Apollo Pharmacy,Goregaon,18.999638,72.801717,"94/151, Shere Chowk, Goregaon, Mumbai",Lakshit Kara,+91 9346295181,08:00,22:00
+PH009,Malad City Chemist,Malad,19.029018,72.883642,"H.No. 269, Johal Zila, Malad, Mumbai",Pallavi Nazareth,+91 8374638893,08:00,22:00
+PH010,Vile Parle Generic Aid,Vile Parle,19.059667,72.827595,"H.No. 64, Sachar Path, Vile Parle, Mumbai",Gabriel Keer,+91 8930946463,08:00,22:00
+PH011,Kurla MedPlus,Kurla,19.102845,72.791179,"H.No. 397, Gupta Street, Kurla, Mumbai",Sanaya Sahota,+91 9486430926,08:00,22:00
+PH012,Worli Generic Aid,Worli,19.026115,72.845627,"84, Kale Ganj, Worli, Mumbai",Upma Bumb,+91 8114946421,08:00,22:00
