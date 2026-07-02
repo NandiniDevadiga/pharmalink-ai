@@ -1,8 +1,8 @@
 // In development: uses http://127.0.0.1:8000 (your local backend)
 // In production (Vercel): uses VITE_API_URL environment variable
 // which you set in Vercel dashboard to your Railway backend URL
-const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-
+// PRODUCTION BUILD - connects to Render backend
+const BASE_URL = "https://pharmalink-ai.onrender.com";
 async function request(path, options = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: { "Content-Type": "application/json" },
