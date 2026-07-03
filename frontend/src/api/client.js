@@ -106,6 +106,14 @@ export const api = {
       headers: authHeaders(token),
       body: JSON.stringify(data),
     }),
+  getPharmacyProfile: (token) =>
+    request(`/pharmacy/profile`, { headers: authHeaders(token) }),
+  updatePharmacyProfile: (token, data) =>
+    request(`/pharmacy/profile`, {
+      method: "PUT",
+      headers: authHeaders(token),
+      body: JSON.stringify(data),
+    }),
   getPharmacyStock: (token) => 
     request(`/pharmacy/stock`, { headers: authHeaders(token) }),
   searchGlobalMedicines: (token, q) =>

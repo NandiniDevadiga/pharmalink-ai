@@ -10,6 +10,7 @@ import AdminPanel from "./pages/AdminPanel";
 import MedicineCatalog from "./pages/MedicineCatalog";
 import Inventory from "./pages/Inventory";
 import PointOfSale from "./pages/PointOfSale";
+import PharmacyProfile from "./pages/PharmacyProfile";
 
 export default function App() {
   return (
@@ -41,6 +42,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <PointOfSale />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <PharmacyProfile />
               </ProtectedRoute>
             }
           />

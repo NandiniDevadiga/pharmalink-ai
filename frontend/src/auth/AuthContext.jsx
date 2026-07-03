@@ -7,11 +7,12 @@ const AuthContext = createContext(null);
 const STORAGE_KEY = "pharmalink_session"; // kept in memory + sessionStorage-like state object
 
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(null); // { token, role, pharmacy_id, pharmacy_name }
+  const [session, setSession] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  });
   const [ready, setReady] = useState(false);
 
-  // Restore session from memory on mount (no browser storage per artifact constraints -
-  // in your real deployment outside Claude artifacts, you can safely use localStorage here)
   useEffect(() => {
     setReady(true);
   }, []);
@@ -32,13 +33,16 @@ export function AuthProvider({ children }) {
       role: data.role,
       pharmacy_id: data.pharmacy_id,
       pharmacy_name: data.pharmacy_name,
+      username: username,
     };
     setSession(newSession);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newSession));
     return newSession;
   }
 
   function logout() {
     setSession(null);
+    localStorage.removeItem(STORAGE_KEY);
   }
 
   return (

@@ -189,9 +189,6 @@ def register_user(payload: RegisterRequest):
                 "open_time": payload.open_time,
                 "close_time": payload.close_time
             })
-            # Sync global df_pharmacies
-            global df_pharmacies
-            df_pharmacies = get_dataframe_from_mongo("pharmacies")
 
     return {"message": f"Successfully registered user '{uname}'."}
 
@@ -370,36 +367,69 @@ def search_medicine(
     max_distance_km: float = Query(15.0, description="Search radius in km"),
 ):
     """Find pharmacies near the user that stock the given medicine."""
-    matches = df_stock[df_stock["drug_name"].str.contains(drug_name, case=False, na=False)]
-    if matches.empty:
-        return {"query": drug_name, "results": [], "message": "No medicine found matching that name."}
+    import datetime
 
-    merged = matches.merge(df_pharmacies, on=["pharmacy_id", "pharmacy_name"])
-    merged["distance_km"] = merged.apply(
-        lambda r: round(haversine_km(user_lat, user_lon, r["latitude"], r["longitude"]), 2), axis=1
-    )
-    nearby = merged[merged["distance_km"] <= max_distance_km]
-    in_stock = nearby[nearby["stock_qty"] > 0].sort_values("distance_km")
-    out_of_stock_nearby = nearby[nearby["stock_qty"] == 0]
-
-    # Auto-log unmet demand: if searched drug has no in-stock results nearby,
-    # record it as a demand signal for the dashboard
-    if len(in_stock) == 0 and not matches.empty:
-        for _, row in out_of_stock_nearby.head(3).iterrows():
+    # 1. Find all stock matching drug_name
+    query = {"drug_name": {"$regex": drug_name.strip(), "$options": "i"}}
+    stock_matches = list(db.stock.find(query, {"_id": 0}))
+    
+    if not stock_matches:
+        return {"query": drug_name, "count": 0, "results": [], "message": "No medicine found matching that name."}
+        
+    # 2. Get unique pharmacy IDs from matches
+    pharmacy_ids = list(set(s["pharmacy_id"] for s in stock_matches))
+    
+    # 3. Fetch those pharmacies
+    pharmacies = list(db.pharmacies.find({"pharmacy_id": {"$in": pharmacy_ids}}, {"_id": 0}))
+    pharm_dict = {p["pharmacy_id"]: p for p in pharmacies}
+    
+    results = []
+    out_of_stock_nearby = []
+    
+    for s in stock_matches:
+        pharm = pharm_dict.get(s["pharmacy_id"])
+        if not pharm:
+            continue
+            
+        lat = pharm.get("latitude")
+        lon = pharm.get("longitude")
+        if lat is None or lon is None:
+            continue
+            
+        dist = round(haversine_km(user_lat, user_lon, float(lat), float(lon)), 2)
+        
+        if dist <= max_distance_km:
+            if s.get("stock_qty", 0) > 0:
+                results.append({
+                    "pharmacy_name": pharm.get("pharmacy_name", "Unknown"),
+                    "area": pharm.get("area", "Unknown Area"),
+                    "address": pharm.get("address", "Unknown Address"),
+                    "distance_km": dist,
+                    "drug_name": s["drug_name"],
+                    "unit_price_inr": s.get("unit_price_inr", 0),
+                    "stock_qty": s["stock_qty"],
+                    "pharmacist_name": pharm.get("pharmacist_name", "Pharmacist"),
+                    "contact_number": pharm.get("contact_number", "N/A"),
+                    "open_time": pharm.get("open_time", "08:00 AM"),
+                    "close_time": pharm.get("close_time", "10:00 PM"),
+                    "otc_or_rx": s.get("otc_or_rx", "OTC")
+                })
+            else:
+                out_of_stock_nearby.append({"pharmacy_id": s["pharmacy_id"]})
+                
+    results.sort(key=lambda x: x["distance_km"])
+    
+    # Auto-log unmet demand if everything nearby is out of stock
+    if len(results) == 0 and len(out_of_stock_nearby) > 0:
+        for row in out_of_stock_nearby[:3]:
             try:
                 db.unmet_demand.insert_one({
                     "drug_name": drug_name,
                     "pharmacy_id": row["pharmacy_id"],
-                    "timestamp": pd.Timestamp.now().isoformat(),
+                    "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
                 })
             except Exception as ex:
                 print(f"Error logging unmet demand: {ex}")
-
-    results = in_stock[[
-        "pharmacy_name", "area", "address", "distance_km", "drug_name",
-        "unit_price_inr", "stock_qty", "pharmacist_name", "contact_number",
-        "open_time", "close_time", "otc_or_rx"
-    ]].to_dict(orient="records")
 
     return {"query": drug_name, "count": len(results), "results": results}
 
@@ -1576,6 +1606,47 @@ def delete_medicine(medicine_id: str, current_user: TokenData = Depends(require_
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Medicine not found.")
     return {"message": "Medicine deleted successfully."}
+
+
+# =============================================================================
+# REAL-TIME PHARMACY PROFILE
+# =============================================================================
+
+class PharmacyProfileUpdate(BaseModel):
+    pharmacy_name: Optional[str] = None
+    area: Optional[str] = None
+    address: Optional[str] = None
+    contact_number: Optional[str] = None
+    open_time: Optional[str] = None
+    close_time: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+@app.get("/pharmacy/profile")
+def get_pharmacy_profile(current_user: TokenData = Depends(get_current_user)):
+    if current_user.role != "pharmacy":
+        raise HTTPException(status_code=403, detail="Only pharmacies have a profile.")
+    
+    pharm_id = current_user.pharmacy_id
+    profile = db.pharmacies.find_one({"pharmacy_id": pharm_id}, {"_id": 0})
+    if not profile:
+        raise HTTPException(status_code=404, detail="Pharmacy profile not found.")
+    return {"profile": profile}
+
+@app.put("/pharmacy/profile")
+def update_pharmacy_profile(payload: PharmacyProfileUpdate, current_user: TokenData = Depends(get_current_user)):
+    if current_user.role != "pharmacy":
+        raise HTTPException(status_code=403, detail="Only pharmacies can update their profile.")
+    
+    pharm_id = current_user.pharmacy_id
+    update_data = {k: v for k, v in payload.dict().items() if v is not None}
+    
+    if not update_data:
+        return {"message": "No fields provided to update."}
+        
+    db.pharmacies.update_one({"pharmacy_id": pharm_id}, {"$set": update_data})
+    
+    return {"message": "Profile updated successfully."}
 
 
 # =============================================================================

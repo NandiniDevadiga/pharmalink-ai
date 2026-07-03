@@ -288,7 +288,6 @@ export default function Dashboard() {
               📦 Upload Stock CSV
             </button>
           )}
-          <button className="btn-logout" onClick={logout}>Log out</button>
         </div>
 
       </div>

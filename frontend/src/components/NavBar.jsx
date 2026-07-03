@@ -2,7 +2,7 @@ import { NavLink } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 export default function NavBar() {
-  const { session } = useAuth();
+  const { session, logout } = useAuth();
 
   return (
     <nav className="navbar">
@@ -27,12 +27,17 @@ export default function NavBar() {
           <>
             <NavLink to="/pos" className="nav-link pos-link">Point of Sale</NavLink>
             <NavLink to="/inventory" className="nav-link">Inventory</NavLink>
+            <NavLink to="/profile" className="nav-link">Profile</NavLink>
           </>
         )}
 
         <NavLink to="/dashboard" className="nav-link staff-link">
           {session ? (session.role === "admin" ? "Admin Dashboard" : "Analytics") : "Pharmacy Staff Login"}
         </NavLink>
+        
+        {session && (
+          <button onClick={logout} className="nav-link logout-btn">Log out</button>
+        )}
       </div>
 
       <style>{`
@@ -82,6 +87,7 @@ export default function NavBar() {
           font-size: 0.92rem;
           color: var(--color-text-muted);
           transition: background 0.15s, color 0.15s;
+          text-decoration: none;
         }
         .nav-link:hover {
           background: var(--color-accent-soft);
@@ -113,6 +119,17 @@ export default function NavBar() {
           opacity: 0.85;
         }
         .staff-link:hover { opacity: 1; }
+        .logout-btn {
+          background: transparent;
+          border: 1px solid #F5C6C1;
+          color: var(--color-danger);
+          cursor: pointer;
+          font-family: var(--font-body);
+        }
+        .logout-btn:hover {
+          background: #FBEAE8;
+          color: var(--color-danger);
+        }
         @media (max-width: 720px) {
           .navbar { padding: 14px 18px; flex-wrap: wrap; gap: 10px; }
           .navbar-links { gap: 4px; }
