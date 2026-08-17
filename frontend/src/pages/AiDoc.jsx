@@ -165,6 +165,15 @@ export default function AiDoc() {
               <h3>💡 Other Suggestions</h3>
               <ul>{advice.other_suggestions.map((item, i) => <li key={i}>{item}</li>)}</ul>
             </div>
+            {advice.alternative_medicines && advice.alternative_medicines.length > 0 && (
+              <div className="advice-card do-card wide-card">
+                <h3>💊 Alternative Medicines</h3>
+                <p style={{fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '10px', marginTop: 0}}>
+                  Medicines with the exact same active ingredients:
+                </p>
+                <ul>{advice.alternative_medicines.map((item, i) => <li key={i}>{item}</li>)}</ul>
+              </div>
+            )}
           </div>
         </section>
       )}

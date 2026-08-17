@@ -32,6 +32,8 @@ ALLOWED_ORIGINS = [
     "https://pharmalink-ai-frontend.vercel.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
     "http://localhost:3000",
 ]
 
@@ -809,6 +811,25 @@ def get_lifestyle_advice(payload: SymptomInput):
         "Please consult a licensed doctor for any medicine or treatment decisions."
     )
 
+    alternative_medicines = []
+    
+    from database import db
+    # Always try to find if the input is a medicine in our large compositions dataset
+    med_doc = db.medicine_compositions.find_one({"drug_name": {"$regex": f"^{re.escape(key)}", "$options": "i"}})
+    if not med_doc:
+        med_doc = db.medicine_compositions.find_one({"drug_name": {"$regex": re.escape(key), "$options": "i"}})
+        
+    if med_doc and "composition" in med_doc:
+        comp = med_doc["composition"]
+        # If we found it in the large dataset, we know it's a medicine
+        resolved_from_medicine = True
+        # Find up to 5 other medicines with the EXACT same composition
+        alts = list(db.medicine_compositions.find(
+            {"composition": comp, "drug_name": {"$ne": med_doc["drug_name"]}},
+            {"drug_name": 1, "_id": 0}
+        ).limit(5))
+        alternative_medicines = [a["drug_name"].title() for a in alts]
+
     return {
         "condition": resolved_condition,
         "original_input": payload.condition,
@@ -820,6 +841,7 @@ def get_lifestyle_advice(payload: SymptomInput):
         "activity_dos": rules["do_activity"],
         "activity_donts": rules["dont_activity"],
         "other_suggestions": rules["other"],
+        "alternative_medicines": alternative_medicines,
     }
 
 
