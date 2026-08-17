@@ -58,6 +58,10 @@ export const api = {
   getSeasonalHeatmap: (token) => request(`/dashboard/seasonal-heatmap`, { headers: authHeaders(token) }),
   getForecast: (token, monthsAhead = 1) => request(`/dashboard/forecast?months_ahead=${monthsAhead}`, { headers: authHeaders(token) }),
   getUnmetDemand: (token) => request(`/dashboard/unmet-demand`, { headers: authHeaders(token) }),
+  getCustomDashboard: (token, pharmacyId = null) => {
+    const url = pharmacyId ? `/dashboard/pharmacy-custom?pharmacy_id=${pharmacyId}` : `/dashboard/pharmacy-custom`;
+    return request(url, { headers: authHeaders(token) });
+  },
 
   // Admin panel - manage pharmacy/admin accounts (admin role only, enforced server-side too)
   getUsers: (token) => request(`/admin/users`, { headers: authHeaders(token) }),
@@ -72,6 +76,12 @@ export const api = {
       method: "POST",
       headers: authHeaders(token),
       body: JSON.stringify({ username, active }),
+    }),
+  deleteUser: (token, username) =>
+    request(`/admin/delete-user`, {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ username }),
     }),
   bulkUpload: (token, data) =>
     request(`/admin/bulk-upload`, {

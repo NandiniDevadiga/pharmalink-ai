@@ -54,14 +54,17 @@ export default function AdminPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  async function handleToggleActive(user) {
+  async function handleDeleteUser(user) {
     setActionMsg(null);
+    if (!window.confirm(`Are you sure you want to delete user ${user.username}?`)) {
+      return;
+    }
     try {
-      await api.setActive(token, user.username, !user.active);
-      setActionMsg(`${user.username} is now ${!user.active ? "active" : "disabled"}.`);
+      await api.deleteUser(token, user.username);
+      setActionMsg(`User ${user.username} has been deleted.`);
       loadUsers();
     } catch (err) {
-      setActionMsg(`Could not update ${user.username}: ${err.message}`);
+      setActionMsg(`Could not delete ${user.username}: ${err.message}`);
     }
   }
 
@@ -307,10 +310,10 @@ export default function AdminPanel() {
                   </button>
                   {u.username !== "admin" && (
                     <button
-                      className={`btn-small ${u.active ? "btn-danger" : "btn-success"}`}
-                      onClick={() => handleToggleActive(u)}
+                      className="btn-small btn-danger"
+                      onClick={() => handleDeleteUser(u)}
                     >
-                      {u.active ? "Disable" : "Enable"}
+                      Delete
                     </button>
                   )}
                 </td>

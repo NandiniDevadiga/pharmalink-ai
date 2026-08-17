@@ -23,6 +23,7 @@ import os
 from auth import (
     authenticate_user, create_access_token, get_current_user, require_admin,
     TokenData, list_users_safe, admin_reset_password, admin_set_active,
+    admin_delete_user,
 )
 
 app = FastAPI(title="Pharmalink AI API")
@@ -279,6 +280,21 @@ def admin_set_active_endpoint(payload: SetActiveRequest, current_user: TokenData
     if not ok:
         raise HTTPException(status_code=404, detail="No account with that username.")
     return {"message": f"{payload.username} is now {'active' if payload.active else 'disabled'}."}
+
+
+class DeleteUserRequest(BaseModel):
+    username: str
+
+
+@app.post("/admin/delete-user")
+def admin_delete_user_endpoint(payload: DeleteUserRequest, current_user: TokenData = Depends(require_admin)):
+    """Admin can delete a user account."""
+    if payload.username.lower() == "admin":
+        raise HTTPException(status_code=400, detail="You cannot delete the primary admin account.")
+    ok = admin_delete_user(payload.username)
+    if not ok:
+        raise HTTPException(status_code=404, detail="No account with that username.")
+    return {"message": f"Successfully deleted {payload.username}."}
 
 
 class BulkUserItem(BaseModel):
@@ -789,6 +805,78 @@ def resolve_medicine_to_condition(user_input: str):
     return key, False
 
 
+def paraphrase_rules(rules: dict, seed_string: str) -> dict:
+    # Deterministic hash function for consistent advice per medicine
+    import hashlib
+    h_val = int(hashlib.md5(seed_string.encode('utf-8')).hexdigest(), 16)
+    
+    variations = {
+        # Food Do (Skin)
+        "Eat foods rich in Vitamin E & C (nuts, seeds, citrus fruits)": [
+            "Prioritize foods high in Vitamin E and C, such as almonds and oranges",
+            "Incorporate nuts, seeds, and citrus fruits (Vitamin E & C) into your meals",
+            "Focus on a diet rich in Vitamin E & C to support skin healing"
+        ],
+        "Stay hydrated to maintain healthy skin barrier": [
+            "Drink plenty of water to help support your skin's natural moisture",
+            "Keep hydrated throughout the day to sustain a healthy skin barrier",
+            "Drink adequate water daily to keep your skin hydrated from within"
+        ],
+        # Food Dont (Skin)
+        "Limit sugar and high-glycemic foods that can promote skin inflammation": [
+            "Cut back on sugary and high-glycemic foods which can worsen skin flare-ups",
+            "Minimize sugar intake to help reduce potential skin inflammation",
+            "Avoid high-sugar foods that might trigger inflammatory skin responses"
+        ],
+        "Reduce dairy intake if it triggers your skin breakouts": [
+            "Consider reducing dairy products if they tend to irritate your skin",
+            "Limit dairy consumption to see if it helps reduce breakouts",
+            "Try avoiding dairy if you notice it triggers skin irritation"
+        ],
+        # Activity Do (Skin)
+        "Wear loose, breathable cotton clothing to avoid friction": [
+            "Opt for loose-fitting cotton outfits to minimize skin irritation",
+            "Wear breathable, loose clothes (preferably cotton) to prevent rubbing",
+            "Choose airy cotton garments to keep the skin comfortable"
+        ],
+        "Keep the affected skin area clean and dry": [
+            "Ensure the irritated area remains clean and moisture-free",
+            "Keep the affected region dry and wash it gently",
+            "Maintain cleanliness and keep the affected skin dry"
+        ],
+        # Activity Dont (Skin)
+        "Avoid scratching, picking, or rubbing the affected skin": [
+            "Try not to scratch, pick, or rub at the sensitive skin area",
+            "Avoid touching, rubbing, or scratching the irritated skin",
+            "Refrain from scratching or peeling the affected skin region"
+        ],
+        "Avoid taking very hot showers or using harsh soaps": [
+            "Skip hot baths and harsh body washes; opt for lukewarm water",
+            "Avoid bathing in very hot water or using strongly scented soaps",
+            "Steer clear of hot showers and irritating chemical soaps"
+        ],
+        # Other (Skin)
+        "Apply topical medications strictly on clean, dry skin as directed by your dermatologist.": [
+            "Ensure your skin is fully clean and dry before applying any cream.",
+            "Apply the ointment onto clean and dry skin exactly as instructed.",
+            "Make sure the area is washed and dried well before applying the medication."
+        ]
+    }
+    
+    new_rules = {}
+    for key, items in rules.items():
+        new_items = []
+        for item in items:
+            if item in variations:
+                choices = variations[item]
+                idx = h_val % len(choices)
+                new_items.append(choices[idx])
+            else:
+                new_items.append(item)
+        new_rules[key] = new_items
+    return new_rules
+
+
 @app.post("/aidoc/advice")
 def get_lifestyle_advice(payload: SymptomInput):
     """
@@ -803,15 +891,8 @@ def get_lifestyle_advice(payload: SymptomInput):
     # and still get relevant advice for their actual condition.
     resolved_condition, resolved_from_medicine = resolve_medicine_to_condition(key)
 
-    rules = LIFESTYLE_RULES.get(resolved_condition, GENERIC_ADVICE)
-    matched = resolved_condition in LIFESTYLE_RULES
-
-    disclaimer = (
-        "This is general lifestyle guidance only, not a medical diagnosis or treatment. "
-        "Please consult a licensed doctor for any medicine or treatment decisions."
-    )
-
     alternative_medicines = []
+    comp = ""
     
     from database import db
     # Always try to find if the input is a medicine in our large compositions dataset
@@ -829,6 +910,54 @@ def get_lifestyle_advice(payload: SymptomInput):
             {"drug_name": 1, "_id": 0}
         ).limit(5))
         alternative_medicines = [a["drug_name"].title() for a in alts]
+
+    # Dynamically determine the lifestyle rules based on condition or medicine keywords
+    rules = LIFESTYLE_RULES.get(resolved_condition, None)
+    matched = resolved_condition in LIFESTYLE_RULES
+
+    if not rules:
+        # Check keywords in medicine name + composition to give dynamic advice
+        search_text = f"{key} {comp}".lower()
+        if any(k in search_text for k in ["cream", "gel", "ointment", "soap", "lotion", "derm", "fungal", "ketoconazole", "clobetasol", "fluconazole", "miconazole", "skin", "betamethasone", "itraconalzole", "terbinafine"]):
+            rules = {
+                "do_food": ["Eat foods rich in Vitamin E & C (nuts, seeds, citrus fruits)", "Stay hydrated to maintain healthy skin barrier"],
+                "dont_food": ["Limit sugar and high-glycemic foods that can promote skin inflammation", "Reduce dairy intake if it triggers your skin breakouts"],
+                "do_activity": ["Wear loose, breathable cotton clothing to avoid friction", "Keep the affected skin area clean and dry"],
+                "dont_activity": ["Avoid scratching, picking, or rubbing the affected skin", "Avoid taking very hot showers or using harsh soaps"],
+                "other": ["Apply topical medications strictly on clean, dry skin as directed by your dermatologist."],
+            }
+            resolved_condition = "Skin / Dermatological Condition"
+            matched = True
+        elif any(k in search_text for k in ["paracetamol", "ibuprofen", "diclofenac", "aceclofenac", "nimesulide", "tramadol", "pain", "spasm", "aspirin", "mefenamic"]):
+            rules = {
+                "do_food": ["Eat light, easily digestible meals if taking pain relievers", "Include anti-inflammatory foods like ginger and turmeric"],
+                "dont_food": ["Avoid alcohol, especially when taking pain medications (increases liver/stomach risk)", "Limit heavy, fatty meals"],
+                "do_activity": ["Rest the affected area if experiencing physical pain", "Engage in gentle stretching if approved by a doctor"],
+                "dont_activity": ["Avoid strenuous activities that strain the painful area", "Avoid long periods of static posture"],
+                "other": ["Take pain relievers with food or milk if they cause stomach upset."],
+            }
+            resolved_condition = "Pain / Fever"
+            matched = True
+        elif any(k in search_text for k in ["pantoprazole", "omeprazole", "rabeprazole", "ranitidine", "famotidine", "acid", "antacid", "gelusil", "sucralfate"]):
+            rules = {
+                "do_food": ["Eat smaller, more frequent meals throughout the day", "Include non-citrus fruits like bananas and melons"],
+                "dont_food": ["Avoid spicy, oily, fried, and highly acidic foods", "Limit caffeine, carbonated drinks, and alcohol"],
+                "do_activity": ["Remain upright for at least 2 hours after meals", "Elevate the head of your bed by 6 inches"],
+                "dont_activity": ["Avoid lying down immediately after eating", "Avoid tight clothing around your abdomen"],
+                "other": ["Keep a food diary to identify and avoid your personal acid reflux triggers."],
+            }
+            resolved_condition = "Acidity / GERD"
+            matched = True
+        else:
+            rules = GENERIC_ADVICE
+
+    # Apply deterministic paraphrasing if it's a medicine search
+    rules = paraphrase_rules(rules, key)
+
+    disclaimer = (
+        "This is general lifestyle guidance only, not a medical diagnosis or treatment. "
+        "Please consult a licensed doctor for any medicine or treatment decisions."
+    )
 
     return {
         "condition": resolved_condition,
@@ -1119,6 +1248,181 @@ def seasonal_heatmap(current_user: TokenData = Depends(get_current_user)):
     ).reset_index().sort_values(["category", "month_num"])
 
     return result.drop(columns=["month_num"]).to_dict(orient="records")
+
+
+@app.get("/dashboard/pharmacy-custom")
+def pharmacy_custom(
+    pharmacy_id: Optional[str] = None,
+    current_user: TokenData = Depends(get_current_user)
+):
+    # Determine the target pharmacy
+    target_pharm_id = pharmacy_id
+    if not target_pharm_id:
+        if current_user.role == "pharmacy":
+            target_pharm_id = current_user.pharmacy_id
+        else:
+            # For admin, default to first pharmacy in DB
+            first_pharm = db.pharmacies.find_one({}, {"pharmacy_id": 1})
+            target_pharm_id = first_pharm["pharmacy_id"] if first_pharm else "PH19"
+            
+    # Load data for this pharmacy
+    pharm_doc = db.pharmacies.find_one({"pharmacy_id": target_pharm_id}, {"_id": 0})
+    pharm_name = pharm_doc["pharmacy_name"] if pharm_doc else f"Branch {target_pharm_id}"
+    
+    # Stock levels query
+    stock_docs = list(db.stock.find({"pharmacy_id": target_pharm_id}, {"_id": 0}))
+    df_stock = pd.DataFrame(stock_docs)
+    
+    # Sales query
+    sales_docs = list(db.sales_transactions.find({"pharmacy_id": target_pharm_id}, {"_id": 0}))
+    df_sales = pd.DataFrame(sales_docs)
+    if not df_sales.empty:
+        df_sales["date"] = pd.to_datetime(df_sales["date"])
+        
+    # Overall sales query (for demanded overall)
+    overall_sales_docs = list(db.sales_transactions.find({}, {"_id": 0}))
+    df_overall = pd.DataFrame(overall_sales_docs)
+    if not df_overall.empty:
+        df_overall["date"] = pd.to_datetime(df_overall["date"])
+
+    # 1. KPIs (Month: August 2026)
+    curr_year, curr_month = 2026, 8
+    
+    unique_meds = len(df_stock["drug_name"].unique()) if not df_stock.empty else 0
+    
+    if not df_sales.empty:
+        df_curr_month = df_sales[(df_sales["date"].dt.year == curr_year) & (df_sales["date"].dt.month == curr_month)]
+        sold_this_month = int(df_curr_month["quantity"].sum())
+        revenue_this_month = float(df_curr_month["total_inr"].sum())
+        
+        # Gross profit margin calculations
+        if "total_cost_inr" in df_curr_month.columns:
+            cost_this_month = float(df_curr_month["total_cost_inr"].sum())
+        else:
+            cost_this_month = revenue_this_month * 0.73
+            
+        gross_profit_this_month = revenue_this_month - cost_this_month
+        profit_margin_pct = (gross_profit_this_month / revenue_this_month * 100) if revenue_this_month > 0 else 0.0
+        
+        # MoM Growth (August vs July)
+        df_jul = df_sales[(df_sales["date"].dt.year == 2026) & (df_sales["date"].dt.month == 7)]
+        revenue_jul = float(df_jul["total_inr"].sum()) if not df_jul.empty else 0.0
+        if revenue_jul > 0:
+            revenue_growth_pct = round(((revenue_this_month - revenue_jul) / revenue_jul) * 100, 1)
+        else:
+            revenue_growth_pct = 0.0
+    else:
+        sold_this_month = 0
+        revenue_this_month = 0.0
+        gross_profit_this_month = 0.0
+        profit_margin_pct = 0.0
+        revenue_growth_pct = 0.0
+        
+    # 2. Stock classification table
+    high_stock = []
+    med_stock = []
+    low_stock = []
+    if not df_stock.empty:
+        for _, r in df_stock.iterrows():
+            dname = r["drug_name"]
+            qty = int(r["stock_qty"])
+            if qty > 500:
+                high_stock.append(dname)
+            elif qty >= 100:
+                med_stock.append(dname)
+            else:
+                low_stock.append(f"{dname} ({qty})")
+                
+    # 2b. Smart Reorder Suggestions (Low Stock + High Overall Demand)
+    reorder_suggestions = []
+    if not df_stock.empty:
+        low_stock_df = df_stock[df_stock["stock_qty"] < 100].copy()
+        if not low_stock_df.empty:
+            if not df_overall.empty:
+                # Overall network demand (units sold)
+                overall_dem = df_overall.groupby("drug_name")["quantity"].sum().reset_index()
+                overall_dem.columns = ["drug_name", "network_demand"]
+                low_stock_df = low_stock_df.merge(overall_dem, on="drug_name", how="left")
+            else:
+                low_stock_df["network_demand"] = 0
+            low_stock_df["network_demand"] = low_stock_df["network_demand"].fillna(0).astype(int)
+            # Sort by demand descending
+            low_stock_df = low_stock_df.sort_values("network_demand", ascending=False).head(5)
+            for _, r in low_stock_df.iterrows():
+                curr_stock = int(r["stock_qty"])
+                demand = int(r["network_demand"])
+                reorder_qty = max(100, 300 - curr_stock)
+                reorder_suggestions.append({
+                    "drug_name": r["drug_name"],
+                    "current_stock": curr_stock,
+                    "network_demand": demand,
+                    "suggested_reorder": reorder_qty
+                })
+
+    # 3. Line chart trend (all months)
+    trend_data = []
+    if not df_sales.empty:
+        df_sales["month_str"] = df_sales["date"].dt.strftime("%Y-%m")
+        trend_grouped = df_sales.groupby("month_str")["total_inr"].sum().reset_index()
+        trend_data = trend_grouped.to_dict(orient="records")
+        
+    # 4. Top 10 medicines sold by this pharmacy this month
+    top_sold = []
+    if not df_sales.empty:
+        df_curr_month = df_sales[(df_sales["date"].dt.year == curr_year) & (df_sales["date"].dt.month == curr_month)]
+        if not df_curr_month.empty:
+            top_grouped = df_curr_month.groupby("drug_name")["quantity"].sum().reset_index()
+            top_grouped = top_grouped.sort_values("quantity", ascending=False).head(10)
+            top_sold = top_grouped.to_dict(orient="records")
+
+    # 5. Top 10 meds demanded overall this month across all pharmacies
+    top_demanded_overall = []
+    if not df_overall.empty:
+        df_overall_curr_month = df_overall[(df_overall["date"].dt.year == curr_year) & (df_overall["date"].dt.month == curr_month)]
+        if not df_overall_curr_month.empty:
+            overall_grouped = df_overall_curr_month.groupby("drug_name")["quantity"].sum().reset_index()
+            overall_grouped = overall_grouped.sort_values("quantity", ascending=False).head(10)
+            top_demanded_overall = overall_grouped.to_dict(orient="records")
+            
+    # 6. AI Market trends
+    market_new_entries = [
+        "Jardiance (Empagliflozin) - New SGLT2 inhibitor dosage approved for heart failure.",
+        "Tezspire (Tezepelumab) - Highly effective biologic now available for severe asthma.",
+        "Mounjaro (Tirzepatide) - Dual GIP/GLP-1 receptor agonist launched for Type 2 Diabetes.",
+        "Rinvoq (Upadacitinib) - JAK inhibitor expanded indication for moderate-to-severe eczema."
+    ]
+    market_stopped_alternates = [
+        {"discontinued": "Zantac (Ranitidine)", "reason": "NDMA impurities concern", "alternate": "Famotidine (Pepcid) or Omeprazole"},
+        {"discontinued": "Sibutramine (Reductil)", "reason": "Increased cardiovascular risk", "alternate": "Orlistat or Liraglutide"},
+        {"discontinued": "Rofecoxib (Vioxx)", "reason": "Risk of heart attack/stroke", "alternate": "Celecoxib or Naproxen"},
+        {"discontinued": "Rosiglitazone (Avandia)", "reason": "Cardiovascular safety restriction", "alternate": "Pioglitazone or Metformin"}
+    ]
+    
+    # List of all pharmacies for admin switcher
+    pharmacies_list = []
+    if current_user.role == "admin":
+        pharmacies_list = list(db.pharmacies.find({}, {"pharmacy_id": 1, "pharmacy_name": 1, "_id": 0}))
+
+    return {
+        "pharmacy_id": target_pharm_id,
+        "pharmacy_name": pharm_name,
+        "unique_meds": unique_meds,
+        "sold_this_month": sold_this_month,
+        "revenue_this_month": round(revenue_this_month, 2),
+        "gross_profit_this_month": round(gross_profit_this_month, 2),
+        "profit_margin_pct": round(profit_margin_pct, 1),
+        "revenue_growth_pct": revenue_growth_pct,
+        "high_stock": high_stock[:15],
+        "med_stock": med_stock[:15],
+        "low_stock": low_stock[:15],
+        "reorder_suggestions": reorder_suggestions,
+        "trend": trend_data,
+        "top_sold": top_sold,
+        "top_demanded_overall": top_demanded_overall,
+        "market_new_entries": market_new_entries,
+        "market_stopped_alternates": market_stopped_alternates,
+        "pharmacies_list": pharmacies_list
+    }
 
 
 @app.get("/dashboard/forecast")

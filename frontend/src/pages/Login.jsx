@@ -177,20 +177,6 @@ export default function Login() {
               {loading ? <span className="lp-spinner" /> : null}
               {loading ? "Signing in…" : "Sign In →"}
             </button>
-
-            <div className="lp-demo-section">
-              <p className="lp-demo-label">Quick demo login</p>
-              <div className="lp-demo-chips">
-                <button type="button" className="lp-demo-chip" onClick={() => fillDemo("admin", "admin123")}>
-                  <span className="lp-chip-icon">🏢</span>
-                  <div><strong>Head Office</strong><span>admin / admin123</span></div>
-                </button>
-                <button type="button" className="lp-demo-chip" onClick={() => fillDemo("ph001", "pharma123")}>
-                  <span className="lp-chip-icon">💊</span>
-                  <div><strong>Branch</strong><span>ph001 / pharma123</span></div>
-                </button>
-              </div>
-            </div>
           </form>
         )}
 

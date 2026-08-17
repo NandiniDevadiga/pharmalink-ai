@@ -158,3 +158,10 @@ def admin_set_active(username: str, active: bool):
     db_save_user(username, user)
     return True
 
+
+def admin_delete_user(username: str):
+    from database import db
+    username_lower = username.lower()
+    res = db.users.delete_one({"username": username_lower})
+    return res.deleted_count > 0
+

@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { api } from "../api/client";
 
 const QUICK_CONDITIONS = [
@@ -11,12 +11,6 @@ export default function AiDoc() {
   const [advice, setAdvice] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Prescription upload state
-  const [uploading, setUploading] = useState(false);
-  const [ocrResult, setOcrResult] = useState(null);
-  const [uploadError, setUploadError] = useState(null);
-  const fileInputRef = useRef(null);
 
   async function fetchAdvice(value) {
     const c = (value ?? condition).trim();
@@ -34,74 +28,13 @@ export default function AiDoc() {
     }
   }
 
-  async function handleFileSelect(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    setUploadError(null);
-    setOcrResult(null);
-    try {
-      const result = await api.uploadPrescription(file);
-      setOcrResult(result);
-      if (result.detected_condition) {
-        setCondition(result.detected_condition);
-        // Auto-fetch advice for the detected condition right away
-        fetchAdvice(result.detected_condition);
-      }
-    } catch (err) {
-      setUploadError("Could not process this image. You can still type your condition manually below.");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  }
-
   return (
     <div className="aidoc-page">
       <section className="aidoc-hero">
-        <h1>AI Doc — lifestyle guidance, not prescriptions.</h1>
+        <h1>AI Doc — Substitutes & Lifestyle Guide</h1>
         <p className="hero-sub">
-          Upload a prescription so I can read the diagnosis, or just type a condition below.
-          AI Doc never recommends medicines — for that, always consult a licensed doctor or pharmacist.
+          Type a medicine or health condition to find its alternatives and healthy lifestyle choices (food, activity) tailored to the condition.
         </p>
-
-        <div className="upload-box">
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-            id="prescription-upload"
-            hidden
-          />
-          <label htmlFor="prescription-upload" className="upload-label">
-            {uploading ? "Reading prescription..." : "📋 Upload a prescription image"}
-          </label>
-          <p className="upload-hint">
-            Works best with printed/typed prescriptions. I'll look for the diagnosis only —
-            never medicine names — and pre-fill the condition below if found.
-          </p>
-        </div>
-
-        {uploadError && <div className="alert-error">{uploadError}</div>}
-
-        {ocrResult && (
-          <div className={`ocr-result ${ocrResult.detected_condition ? "ocr-found" : "ocr-not-found"}`}>
-            <p className="ocr-message">
-              {ocrResult.ocr_available === false
-                ? "⚠️ OCR isn't set up on this server yet — please type your condition manually."
-                : ocrResult.detected_condition
-                  ? `✅ ${ocrResult.message} Pre-filled below — feel free to correct it.`
-                  : `ℹ️ ${ocrResult.message}`}
-            </p>
-            {ocrResult.raw_text && (
-              <details className="ocr-raw">
-                <summary>See what was read from the image</summary>
-                <pre>{ocrResult.raw_text}</pre>
-              </details>
-            )}
-          </div>
-        )}
 
         <form className="search-row" onSubmit={(e) => { e.preventDefault(); fetchAdvice(); }}>
           <input
@@ -118,123 +51,88 @@ export default function AiDoc() {
 
         <div className="quick-chips">
           <span className="chip-label">Quick try:</span>
-          {QUICK_CONDITIONS.map((c) => (
-            <button key={c} className="chip" onClick={() => fetchAdvice(c)} type="button">
-              {c}
+          {QUICK_CONDITIONS.map((cond) => (
+            <button
+              key={cond}
+              type="button"
+              className="chip"
+              onClick={() => {
+                setCondition(cond);
+                fetchAdvice(cond);
+              }}
+            >
+              {cond}
             </button>
           ))}
         </div>
       </section>
 
-      {error && <div className="alert-error">{error}</div>}
+      {error && <div className="alert-error" style={{ maxWidth: "600px" }}>{error}</div>}
 
       {advice && (
-        <section className="advice-section">
-          <div className="disclaimer-banner">⚕️ {advice.disclaimer}</div>
-
-          <h2>
-            Issue: <span className="issue-name">{advice.condition}</span>
-            {advice.resolved_from_medicine && (
-              <span className="resolved-tag">
-                resolved from "{advice.original_input}"
-              </span>
-            )}
-            {!advice.matched_known_condition && (
-              <span className="generic-tag">general guidance — not a specific match yet</span>
-            )}
-          </h2>
-
-          <div className="advice-grid">
-            <div className="advice-card do-card">
-              <h3>🍽️ Food — Do</h3>
-              <ul>{advice.food_dos.map((item, i) => <li key={i}>{item}</li>)}</ul>
-            </div>
-            <div className="advice-card dont-card">
-              <h3>🍽️ Food — Avoid</h3>
-              <ul>{advice.food_donts.map((item, i) => <li key={i}>{item}</li>)}</ul>
-            </div>
-            <div className="advice-card do-card">
-              <h3>🏃 Activity — Do</h3>
-              <ul>{advice.activity_dos.map((item, i) => <li key={i}>{item}</li>)}</ul>
-            </div>
-            <div className="advice-card dont-card">
-              <h3>🏃 Activity — Avoid</h3>
-              <ul>{advice.activity_donts.map((item, i) => <li key={i}>{item}</li>)}</ul>
-            </div>
-            <div className="advice-card other-card wide-card">
-              <h3>💡 Other Suggestions</h3>
-              <ul>{advice.other_suggestions.map((item, i) => <li key={i}>{item}</li>)}</ul>
-            </div>
-            {advice.alternative_medicines && advice.alternative_medicines.length > 0 && (
-              <div className="advice-card do-card wide-card">
-                <h3>💊 Alternative Medicines</h3>
-                <p style={{fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: '10px', marginTop: 0}}>
-                  Medicines with the exact same active ingredients:
-                </p>
-                <ul>{advice.alternative_medicines.map((item, i) => <li key={i}>{item}</li>)}</ul>
+        <div className="advice-container">
+          {/* Section: Alternates */}
+          {advice.alternatives && advice.alternatives.length > 0 && (
+            <div className="advice-card full-width">
+              <h3>🔄 Alternative Medicines</h3>
+              <p className="card-desc">Suggested substitute medications with the same or equivalent clinical formulations:</p>
+              <div className="chips-list">
+                {advice.alternatives.map((alt, idx) => (
+                  <span key={idx} className="alt-chip">{alt}</span>
+                ))}
               </div>
-            )}
+            </div>
+          )}
+
+          {/* Section: Lifestyle advice */}
+          <div className="advice-grid">
+            <div className="advice-card">
+              <h3>🥦 Diet & Nutrition</h3>
+              <ul>
+                {advice.diet.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="advice-card">
+              <h3>🏃 Activity & Exercises</h3>
+              <ul>
+                {advice.activity.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="advice-card">
+              <h3>🧘 Habits to Avoid</h3>
+              <ul>
+                {advice.avoid.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </section>
+        </div>
       )}
 
       <style>{`
-        .aidoc-page { max-width: 1100px; margin: 0 auto; padding: 48px 32px 80px; }
+        .aidoc-page {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 50px 32px 100px;
+        }
+        
+        .aidoc-hero {
+          margin-bottom: 40px;
+        }
         .aidoc-hero h1 { font-size: 2.2rem; color: var(--color-primary); max-width: 680px; }
         .hero-sub {
           margin-top: 12px; color: var(--color-text-muted); max-width: 600px;
           font-size: 1.02rem; line-height: 1.5;
         }
 
-        .upload-box {
-          margin-top: 28px;
-          max-width: 600px;
-          background: var(--color-surface);
-          border: 1.5px dashed var(--color-border);
-          border-radius: var(--radius-lg);
-          padding: 20px 24px;
-        }
-        .upload-label {
-          display: inline-block;
-          background: var(--color-primary);
-          color: white;
-          padding: 11px 20px;
-          border-radius: var(--radius-md);
-          font-weight: 600;
-          font-size: 0.92rem;
-          cursor: pointer;
-        }
-        .upload-label:hover { background: var(--color-primary-light); }
-        .upload-hint {
-          margin-top: 10px;
-          font-size: 0.8rem;
-          color: var(--color-text-muted);
-          line-height: 1.4;
-        }
-
-        .ocr-result {
-          margin-top: 16px;
-          max-width: 600px;
-          padding: 14px 18px;
-          border-radius: var(--radius-md);
-          font-size: 0.88rem;
-        }
-        .ocr-found { background: #EDF6F1; border: 1px solid #CFE6DA; color: var(--color-primary); }
-        .ocr-not-found { background: var(--color-accent-soft); border: 1px solid #F0D9AE; color: #7A5316; }
-        .ocr-message { margin: 0; }
-        .ocr-raw { margin-top: 10px; }
-        .ocr-raw summary { cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-        .ocr-raw pre {
-          margin-top: 8px;
-          background: rgba(0,0,0,0.04);
-          padding: 10px 12px;
-          border-radius: var(--radius-sm);
-          font-size: 0.78rem;
-          white-space: pre-wrap;
-          word-break: break-word;
-        }
-
-        .search-row { display: flex; gap: 10px; margin-top: 20px; max-width: 600px; }
+        .search-row { display: flex; gap: 10px; margin-top: 30px; max-width: 600px; }
         .search-row input {
           flex: 1; padding: 14px 16px; border: 1.5px solid var(--color-border);
           border-radius: var(--radius-md); font-size: 1rem; font-family: var(--font-body);
@@ -243,73 +141,54 @@ export default function AiDoc() {
         .search-row input:focus { border-color: var(--color-primary-light); }
         .btn-primary {
           background: var(--color-primary); color: white; border: none;
-          padding: 14px 26px; border-radius: var(--radius-md); font-weight: 600;
-          font-size: 0.98rem; transition: background 0.15s;
+          padding: 0 24px; border-radius: var(--radius-md); font-weight: 700;
+          cursor: pointer; font-size: 0.95rem; transition: background 0.1s;
         }
         .btn-primary:hover { background: var(--color-primary-light); }
-        .btn-primary:disabled { opacity: 0.6; cursor: default; }
-        .quick-chips { margin-top: 18px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-        .chip-label { font-size: 0.85rem; color: var(--color-text-muted); margin-right: 4px; }
+        .btn-primary:disabled { opacity: 0.6; }
+
+        .quick-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; align-items: center; max-width: 750px; }
+        .chip-label { font-size: 0.82rem; color: var(--color-text-muted); font-weight: 600; margin-right: 4px; }
         .chip {
-          background: var(--color-accent-soft); border: none; padding: 6px 14px;
-          border-radius: 20px; font-size: 0.85rem; color: #966319; font-weight: 600;
-          text-transform: capitalize;
+          background: var(--color-surface); border: 1.5px solid var(--color-border);
+          border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; font-weight: 500;
+          color: var(--color-text-muted); cursor: pointer; transition: all 0.1s;
         }
-        .chip:hover { background: var(--color-accent); color: #3A2700; }
-        .alert-error {
-          margin-top: 24px; background: #FBEAE8; color: var(--color-danger);
-          padding: 14px 18px; border-radius: var(--radius-md); font-size: 0.92rem;
-          max-width: 600px;
+        .chip:hover { border-color: var(--color-accent); color: var(--color-text); }
+
+        .advice-container { margin-top: 40px; }
+        
+        .advice-card {
+          background: var(--color-surface);
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-lg);
+          padding: 24px;
         }
-        .advice-section { margin-top: 40px; }
-        .disclaimer-banner {
-          background: #EDF6F1; color: var(--color-primary); border: 1px solid #CFE6DA;
-          padding: 12px 18px; border-radius: var(--radius-md); font-size: 0.88rem;
+        .advice-card.full-width {
           margin-bottom: 24px;
         }
-        .advice-section h2 {
-          font-size: 1.2rem; font-family: var(--font-body); font-weight: 700;
-          margin-bottom: 18px;
+        .advice-card h3 { font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin-bottom: 8px; }
+        .card-desc { font-size: 0.88rem; color: var(--color-text-muted); margin-bottom: 16px; }
+        
+        .chips-list { display: flex; gap: 10px; flex-wrap: wrap; }
+        .alt-chip {
+          background: var(--color-accent-soft);
+          color: #8C5B18;
+          font-weight: 700;
+          font-size: 0.88rem;
+          padding: 8px 16px;
+          border-radius: var(--radius-md);
+          border: 1.5px solid #F0D9AE;
         }
-        .issue-name { color: var(--color-primary); text-transform: capitalize; }
-        .resolved-tag {
-          display: inline-block;
-          margin-left: 10px;
-          font-size: 0.7rem;
-          font-weight: 600;
-          color: var(--color-success);
-          background: #E3F2EC;
-          padding: 3px 9px;
-          border-radius: 10px;
-          vertical-align: middle;
-          text-transform: none;
+
+        .advice-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .advice-card ul { padding-left: 20px; margin: 0; }
+        .advice-card li { font-size: 0.9rem; color: var(--color-text); line-height: 1.6; margin-bottom: 8px; }
+        .advice-card li:last-child { margin-bottom: 0; }
+
+        @media (max-width: 900px) {
+          .advice-grid { grid-template-columns: 1fr; }
         }
-        .generic-tag {
-          display: inline-block;
-          margin-left: 10px;
-          font-size: 0.7rem;
-          font-weight: 600;
-          color: var(--color-text-muted);
-          text-transform: none;
-          background: var(--color-bg);
-          padding: 3px 9px;
-          border-radius: 10px;
-          vertical-align: middle;
-        }
-        .advice-grid {
-          display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;
-        }
-        .advice-card {
-          background: var(--color-surface); border-radius: var(--radius-lg);
-          padding: 20px; border: 1px solid var(--color-border);
-        }
-        .advice-card h3 { font-size: 1rem; font-family: var(--font-body); margin-bottom: 12px; }
-        .do-card { border-left: 4px solid var(--color-success); }
-        .dont-card { border-left: 4px solid var(--color-danger); }
-        .other-card { border-left: 4px solid var(--color-accent); }
-        .wide-card { grid-column: 1 / -1; }
-        .advice-card ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
-        .advice-card li { font-size: 0.9rem; line-height: 1.4; color: var(--color-text); }
       `}</style>
     </div>
   );
