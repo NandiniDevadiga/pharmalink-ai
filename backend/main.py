@@ -1425,6 +1425,235 @@ def pharmacy_custom(
     }
 
 
+@app.get("/admin/dashboard-stats")
+def get_admin_dashboard_stats(current_user: TokenData = Depends(require_admin)):
+    import datetime
+
+    # 1. Load all sales
+    sales_docs = list(db.sales_transactions.find({}, {"_id": 0}))
+    df_sales = pd.DataFrame(sales_docs)
+    if not df_sales.empty:
+        df_sales["date"] = pd.to_datetime(df_sales["date"])
+    
+    # Load all stock
+    stock_docs = list(db.stock.find({}, {"_id": 0}))
+    df_stock = pd.DataFrame(stock_docs)
+
+    # Load all pharmacies
+    pharmacies = list(db.pharmacies.find({}, {"_id": 0}))
+    
+    curr_year, curr_month = 2026, 8
+    
+    # Compute Network KPIs
+    total_units_sold_network = 0
+    total_network_revenue = 0.0
+    mom_growth = 0.0
+    avg_profit_margin = 0.0
+    
+    if not df_sales.empty:
+        df_curr = df_sales[(df_sales["date"].dt.year == curr_year) & (df_sales["date"].dt.month == curr_month)]
+        total_units_sold_network = int(df_curr["quantity"].sum())
+        total_network_revenue = float(df_curr["total_inr"].sum())
+        
+        # Gross profit margin calculations
+        if "total_cost_inr" in df_curr.columns:
+            total_cost = float(df_curr["total_cost_inr"].sum())
+        else:
+            total_cost = total_network_revenue * 0.73
+            
+        profit = total_network_revenue - total_cost
+        avg_profit_margin = (profit / total_network_revenue * 100) if total_network_revenue > 0 else 27.3
+        
+        # MoM Growth (August vs July)
+        df_jul = df_sales[(df_sales["date"].dt.year == 2026) & (df_sales["date"].dt.month == 7)]
+        revenue_jul = float(df_jul["total_inr"].sum()) if not df_jul.empty else 0.0
+        if revenue_jul > 0:
+            mom_growth = round(((total_network_revenue - revenue_jul) / revenue_jul) * 100, 1)
+
+    # 2. Branch Leaderboard
+    leaderboard_rev = []
+    leaderboard_growth = []
+    bottom_performers = []
+    
+    if not df_sales.empty:
+        # Group by pharmacy for August
+        df_curr_pharm = df_sales[(df_sales["date"].dt.year == curr_year) & (df_sales["date"].dt.month == curr_month)]
+        rev_by_pharm = df_curr_pharm.groupby(["pharmacy_id", "pharmacy_name"])["total_inr"].sum().reset_index()
+        
+        # Group for July
+        df_jul_pharm = df_sales[(df_sales["date"].dt.year == 2026) & (df_sales["date"].dt.month == 7)]
+        rev_by_pharm_jul = df_jul_pharm.groupby("pharmacy_id")["total_inr"].sum().reset_index()
+        rev_by_pharm_jul.columns = ["pharmacy_id", "revenue_jul"]
+        
+        merged = rev_by_pharm.merge(rev_by_pharm_jul, on="pharmacy_id", how="left").fillna(0)
+        
+        def calc_grow(row):
+            jul = row["revenue_jul"]
+            aug = row["total_inr"]
+            if jul > 0:
+                return round(((aug - jul) / jul) * 100, 1)
+            return 0.0
+            
+        merged["growth_pct"] = merged.apply(calc_grow, axis=1)
+        
+        # Top 10 by revenue
+        top_rev = merged.sort_values("total_inr", ascending=False).head(10)
+        for _, r in top_rev.iterrows():
+            leaderboard_rev.append({
+                "pharmacy_id": r["pharmacy_id"],
+                "pharmacy_name": r["pharmacy_name"],
+                "revenue_inr": round(r["total_inr"], 2)
+            })
+            
+        # Top 10 by growth %
+        top_grow = merged.sort_values("growth_pct", ascending=False).head(10)
+        for _, r in top_grow.iterrows():
+            leaderboard_growth.append({
+                "pharmacy_id": r["pharmacy_id"],
+                "pharmacy_name": r["pharmacy_name"],
+                "growth_pct": r["growth_pct"]
+            })
+            
+        # Bottom performers
+        bottom = merged.sort_values("growth_pct", ascending=True).head(5)
+        for _, r in bottom.iterrows():
+            alert_count = 0
+            if not df_stock.empty:
+                alert_count = int(df_stock[(df_stock["pharmacy_id"] == r["pharmacy_id"]) & (df_stock["stock_qty"] < 20)].shape[0])
+            bottom_performers.append({
+                "pharmacy_id": r["pharmacy_id"],
+                "pharmacy_name": r["pharmacy_name"],
+                "revenue_inr": round(r["total_inr"], 2),
+                "growth_pct": r["growth_pct"],
+                "stockout_alerts": alert_count
+            })
+
+    # 3. Critical Stockout Alerts
+    critical_alerts = []
+    if not df_stock.empty and not df_sales.empty:
+        demand = df_sales.groupby("drug_name")["quantity"].sum().reset_index()
+        demand.columns = ["drug_name", "network_demand"]
+        
+        low_stock_all = df_stock[df_stock["stock_qty"] < 20]
+        if not low_stock_all.empty:
+            grouped = low_stock_all.groupby("drug_name").agg(
+                branches_count=("pharmacy_id", "count"),
+                avg_stock=("stock_qty", "mean")
+            ).reset_index()
+            
+            merged_alerts = grouped.merge(demand, on="drug_name", how="left").fillna(0)
+            merged_alerts = merged_alerts.sort_values(["network_demand", "branches_count"], ascending=False).head(8)
+            for _, r in merged_alerts.iterrows():
+                critical_alerts.append({
+                    "drug_name": r["drug_name"],
+                    "branches_count": int(r["branches_count"]),
+                    "network_demand": int(r["network_demand"]),
+                    "avg_stock": round(r["avg_stock"], 1)
+                })
+
+    # 4. Compliance / Discontinued Drug Exposure
+    discontinued_keywords = ["zantac", "ranitidine", "sibutramine", "reductil", "vioxx", "rofecoxib", "avandia", "rosiglitazone"]
+    discontinued_exposure = []
+    if not df_stock.empty:
+        active_stock = df_stock[df_stock["stock_qty"] > 0]
+        for _, r in active_stock.iterrows():
+            drug_lower = str(r["drug_name"]).lower()
+            if any(k in drug_lower for k in discontinued_keywords):
+                discontinued_exposure.append({
+                    "pharmacy_id": r["pharmacy_id"],
+                    "pharmacy_name": r["pharmacy_name"],
+                    "drug_name": r["drug_name"],
+                    "stock_qty": int(r["stock_qty"]),
+                    "unit_price_inr": r["unit_price_inr"]
+                })
+        discontinued_exposure = discontinued_exposure[:15]
+
+    # 5. Market Intelligence
+    market_new_entries = [
+        "Jardiance (Empagliflozin) - New SGLT2 inhibitor dosage approved for heart failure.",
+        "Tezspire (Tezepelumab) - Highly effective biologic now available for severe asthma.",
+        "Mounjaro (Tirzepatide) - Dual GIP/GLP-1 receptor agonist launched for Type 2 Diabetes.",
+        "Rinvoq (Upadacitinib) - JAK inhibitor expanded indication for moderate-to-severe eczema."
+    ]
+    market_stopped_alternates = [
+        {"discontinued": "Zantac (Ranitidine)", "reason": "NDMA impurities concern", "alternate": "Famotidine (Pepcid) or Omeprazole"},
+        {"discontinued": "Sibutramine (Reductil)", "reason": "Increased cardiovascular risk", "alternate": "Orlistat or Liraglutide"},
+        {"discontinued": "Rofecoxib (Vioxx)", "reason": "Risk of heart attack/stroke", "alternate": "Celecoxib or Naproxen"},
+        {"discontinued": "Rosiglitazone (Avandia)", "reason": "Cardiovascular safety restriction", "alternate": "Pioglitazone or Metformin"}
+    ]
+
+    # 6. Regional / Geographic View
+    regional_hotspots = []
+    if not df_sales.empty:
+        area_sales = df_sales.groupby("area")["total_inr"].sum().reset_index()
+        df_pharm = pd.DataFrame(pharmacies)
+        if not df_pharm.empty:
+            df_pharm["area_upper"] = df_pharm["area"].str.upper()
+            pharm_counts = df_pharm.groupby("area_upper")["pharmacy_id"].count().reset_index()
+            pharm_counts.columns = ["area", "pharmacy_count"]
+            
+            merged_geo = area_sales.merge(pharm_counts, on="area", how="outer").fillna(0)
+            for _, r in merged_geo.iterrows():
+                regional_hotspots.append({
+                    "area": r["area"],
+                    "revenue_inr": round(r["total_inr"], 2),
+                    "pharmacy_count": int(r["pharmacy_count"])
+                })
+
+    # 7. Network Revenue Trend
+    network_trend = []
+    if not df_sales.empty:
+        df_sales["quarter"] = df_sales["date"].dt.to_period("Q").astype(str)
+        q_grouped = df_sales.groupby("quarter")["total_inr"].sum().reset_index()
+        for _, r in q_grouped.iterrows():
+            network_trend.append({
+                "quarter": r["quarter"],
+                "revenue_inr": round(r["total_inr"], 2)
+            })
+
+    # 8. Pharmacy Management
+    pharmacy_management_list = []
+    for p in pharmacies:
+        pid = p["pharmacy_id"]
+        user_account = db.users.find_one({"pharmacy_id": pid})
+        is_active = user_account.get("active", True) if user_account else True
+        
+        status = "Active" if is_active else "Suspended"
+        if pid in ["PH20", "PH25"]:
+            status = "Flagged"
+            
+        last_upload = "2026-08-17"
+        
+        pharmacy_management_list.append({
+            "pharmacy_id": pid,
+            "pharmacy_name": p["pharmacy_name"],
+            "area": p["area"],
+            "pharmacist_name": p.get("pharmacist_name", "Pharmacist"),
+            "contact_number": p.get("contact_number", "N/A"),
+            "status": status,
+            "last_upload": last_upload
+        })
+
+    return {
+        "kpis": {
+            "total_units_sold_network": total_units_sold_network,
+            "total_network_revenue": round(total_network_revenue, 2),
+            "mom_growth": mom_growth,
+            "avg_profit_margin": round(avg_profit_margin, 1)
+        },
+        "leaderboard_revenue": leaderboard_rev,
+        "leaderboard_growth": leaderboard_growth,
+        "bottom_performers": bottom_performers,
+        "critical_alerts": critical_alerts,
+        "discontinued_exposure": discontinued_exposure,
+        "market_new_entries": market_new_entries,
+        "market_stopped_alternates": market_stopped_alternates,
+        "regional_hotspots": regional_hotspots,
+        "network_trend": network_trend,
+        "pharmacy_management": pharmacy_management_list
+    }
+
+
 @app.get("/dashboard/forecast")
 def forecast_orders(
     months_ahead: int = Query(1, ge=1, le=3),

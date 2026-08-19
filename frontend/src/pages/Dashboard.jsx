@@ -23,6 +23,8 @@ function SectionTitle({ children }) {
   return <h2 className="section-title">{children}</h2>;
 }
 
+import AdminPanel from "./AdminPanel";
+
 // =============================================================================
 // MAIN WRAPPER
 // =============================================================================
@@ -32,7 +34,7 @@ export default function Dashboard() {
 
   return (
     <>
-      {isAdmin ? <AdminDashboard /> : <PharmacyDashboard />}
+      {isAdmin ? <AdminPanel /> : <PharmacyDashboard />}
       <DashboardStyles />
     </>
   );

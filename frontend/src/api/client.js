@@ -64,6 +64,7 @@ export const api = {
   },
 
   // Admin panel - manage pharmacy/admin accounts (admin role only, enforced server-side too)
+  getAdminDashboardStats: (token) => request(`/admin/dashboard-stats`, { headers: authHeaders(token) }),
   getUsers: (token) => request(`/admin/users`, { headers: authHeaders(token) }),
   resetPassword: (token, username, newPassword) =>
     request(`/admin/reset-password`, {
