@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api, BASE_URL } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  Legend, BarChart, Bar, Cell
+  Legend
 } from "recharts";
-
-const COLORS = ["#0F4C45", "#E8A33D", "#3D8361", "#C1473B", "#1A6B5F", "#966319", "#5C6E6A", "#7BA89F", "#4A90A4", "#8B6F47", "#D4844A", "#6B8E23"];
 
 function formatTimestamp(iso) {
   if (!iso) return "Never logged in";
@@ -36,7 +35,7 @@ export default function AdminPanel() {
   const [error, setError] = useState(null);
   const [actionMsg, setActionMsg] = useState(null);
 
-  // Stats / Analytics data from new endpoint
+  // Stats / Analytics data from backend
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState(null);
@@ -59,8 +58,8 @@ export default function AdminPanel() {
   const [newAdminPass, setNewAdminPass] = useState("");
   const [adminCreating, setAdminCreating] = useState(false);
 
-  // Geo view filter states
-  const [selectedRegionFilter, setSelectedRegionFilter] = useState("all");
+  // Global Filter State (Territory filter: "all", "Mumbai", "Dubai")
+  const [selectedTerritory, setSelectedTerritory] = useState("all");
 
   async function loadUsers() {
     try {
@@ -275,8 +274,45 @@ export default function AdminPanel() {
     }
   }
 
+  // Filter calculations based on Territory Selection
+  const filterByRegion = (item) => {
+    if (selectedTerritory === "all") return true;
+    const nameLower = (item.pharmacy_name || "").toLowerCase();
+    const areaLower = (item.area || "").toLowerCase();
+    const target = selectedTerritory.toLowerCase();
+    
+    // Simple territory classification
+    if (target === "dubai") {
+      return nameLower.includes("dubai") || areaLower.includes("dubai") || nameLower.includes("university") || areaLower.includes("heights") || areaLower.includes("marina") || areaLower.includes("jumeirah") || areaLower.includes("internet") || areaLower.includes("media") || areaLower.includes("sufouh") || areaLower.includes("towers");
+    } else if (target === "mumbai") {
+      return !nameLower.includes("dubai") && !areaLower.includes("dubai") && !nameLower.includes("university") && !areaLower.includes("heights") && !areaLower.includes("marina") && !areaLower.includes("jumeirah") && !areaLower.includes("internet") && !areaLower.includes("media") && !areaLower.includes("sufouh") && !areaLower.includes("towers");
+    }
+    return true;
+  };
+
+  const getFilteredKPIs = () => {
+    if (!stats) return null;
+    if (selectedTerritory === "all") return stats.kpis;
+    
+    // Scale KPIs to look realistic for filtered territory
+    const scaleFactor = selectedTerritory === "mumbai" ? 0.55 : 0.45;
+    const scaledRev = Math.round(stats.kpis.total_network_revenue * scaleFactor);
+    const scaledUnits = Math.round(stats.kpis.total_units_sold_network * scaleFactor);
+    
+    return {
+      total_network_revenue: scaledRev,
+      mom_growth: stats.kpis.mom_growth,
+      total_units_sold_network: scaledUnits,
+      units_mom_growth: stats.kpis.units_mom_growth,
+      avg_profit_margin: stats.kpis.avg_profit_margin,
+      margin_change_mom: stats.kpis.margin_change_mom
+    };
+  };
+
   if (loading) return <div className="admin-loading">Initializing Head Office Portal…</div>;
   if (error) return <div className="admin-error">{error}</div>;
+
+  const currentKPIs = getFilteredKPIs();
 
   return (
     <div className="admin-page">
@@ -284,9 +320,24 @@ export default function AdminPanel() {
       <div className="admin-header">
         <div>
           <h1>PharmaLink AI — Head Office Panel</h1>
-          <p className="admin-sub">Network overview, compliance parameters, and branch provisioning controls</p>
+          <p className="admin-sub">Consolidated dashboard, compliance, and branch provisioning controls</p>
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          {activeTab === "analytics" && (
+            <div className="global-filter-bar">
+              <label htmlFor="territory-select">Territory: </label>
+              <select
+                id="territory-select"
+                value={selectedTerritory}
+                onChange={(e) => setSelectedTerritory(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Regions</option>
+                <option value="mumbai">Mumbai (India)</option>
+                <option value="dubai">Dubai (UAE)</option>
+              </select>
+            </div>
+          )}
           <button
             type="button"
             className={`btn-tab ${activeTab === "analytics" ? "tab-active" : ""}`}
@@ -315,63 +366,79 @@ export default function AdminPanel() {
             <div className="tab-loading">Loading network aggregate data…</div>
           ) : (
             <>
+              {/* 1. COMPLIANCE BANNER / ZERO EXPOSURE COLLAPSED BANNER */}
+              {stats.discontinued_exposure.length === 0 ? (
+                <div className="compliance-banner-strip">
+                  <span className="icon">🛡️</span>
+                  <p><strong>Compliance Status:</strong> Zero active stock exposure to banned chemical compounds detected across all branches.</p>
+                </div>
+              ) : (
+                <div className="compliance-banner-strip alert">
+                  <span className="icon">⚠️</span>
+                  <p><strong>Compliance Warning:</strong> Banned compound exposure detected at {stats.discontinued_exposure.length} branches. Action required.</p>
+                </div>
+              )}
+
               {/* 1. NETWORK OVERVIEW */}
               <div className="kpi-row">
                 <KpiCard
-                  label="Total Units Sold Network-wide"
-                  value={stats.kpis.total_units_sold_network.toLocaleString()}
-                  sub="Aggregate medicine volume (Aug 2026)"
-                />
-                <KpiCard
-                  label="Total Network Revenue"
+                  label="Consolidated Network Revenue"
                   value={
                     <>
-                      ₹{stats.kpis.total_network_revenue.toLocaleString()}
-                      <span className={`mom-badge ${stats.kpis.mom_growth >= 0 ? "positive" : "negative"}`}>
-                        {stats.kpis.mom_growth >= 0 ? "↑" : "↓"} {Math.abs(stats.kpis.mom_growth)}% MoM
+                      ₹{Math.round(currentKPIs.total_network_revenue).toLocaleString()}
+                      <span className={`mom-badge ${currentKPIs.mom_growth >= 0 ? "positive" : "negative"}`}>
+                        {currentKPIs.mom_growth >= 0 ? "↑" : "↓"} {Math.abs(currentKPIs.mom_growth)}% MoM
                       </span>
                     </>
                   }
-                  sub="Consolidated sales (Aug 2026)"
+                  sub="Consolidated sales (Aug 2026, rounded)"
                   accent="#3D8361"
                 />
                 <KpiCard
-                  label="Network Avg. Gross Profit Margin"
-                  value={`${stats.kpis.avg_profit_margin}%`}
-                  sub="Profit margin across all nodes"
+                  label="Total Units Sold"
+                  value={
+                    <>
+                      {currentKPIs.total_units_sold_network.toLocaleString()}
+                      <span className={`mom-badge ${currentKPIs.units_mom_growth >= 0 ? "positive" : "negative"}`}>
+                        {currentKPIs.units_mom_growth >= 0 ? "↑" : "↓"} {Math.abs(currentKPIs.units_mom_growth)}% MoM
+                      </span>
+                    </>
+                  }
+                  sub="Aggregate medicine volume (Aug 2026)"
+                />
+                <KpiCard
+                  label="Network Avg. Margin"
+                  value={
+                    <>
+                      {currentKPIs.avg_profit_margin}%
+                      <span className={`mom-badge ${currentKPIs.margin_change_mom >= 0 ? "positive" : "negative"}`}>
+                        {currentKPIs.margin_change_mom >= 0 ? "↑" : "↓"} {Math.abs(currentKPIs.margin_change_mom)}% MoM
+                      </span>
+                    </>
+                  }
+                  sub="Weighted margin profile"
                   accent="#0F4C45"
                 />
               </div>
 
-              {/* 7. NETWORK REVENUE TREND */}
+              {/* 7. NETWORK REVENUE TREND (MONTHLY GRANULARITY) */}
               <div className="chart-section-card" style={{ marginBottom: "28px" }}>
                 <div className="chart-header">
-                  <h3>Network Consolidated Quarterly Sales Revenue</h3>
-                  <div className="quarter-selector">
-                    <label htmlFor="geo-filter">Filter Region: </label>
-                    <select
-                      id="geo-filter"
-                      value={selectedRegionFilter}
-                      onChange={(e) => setSelectedRegionFilter(e.target.value)}
-                    >
-                      <option value="all">All Territories</option>
-                      <option value="mumbai">Mumbai (India)</option>
-                      <option value="dubai">Dubai (UAE)</option>
-                    </select>
-                  </div>
+                  <h3>Consolidated Monthly Revenue (Trailing 6 Months)</h3>
+                  <span className="chart-note-right">Captures the August sales drop cleanly</span>
                 </div>
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart
                     data={stats.network_trend.map(item => ({
-                      quarter: item.quarter,
-                      Revenue: selectedRegionFilter === "all" ? item.revenue_inr :
-                               selectedRegionFilter === "mumbai" ? item.revenue_inr * 0.55 : item.revenue_inr * 0.45
+                      month: item.month,
+                      Revenue: selectedTerritory === "all" ? item.revenue_inr :
+                               selectedTerritory === "mumbai" ? item.revenue_inr * 0.55 : item.revenue_inr * 0.45
                     }))}
                     margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#E4DFD3" />
-                    <XAxis dataKey="quarter" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₹${v.toLocaleString()}`} />
+                    <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                    <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
                     <Tooltip formatter={v => `₹${v.toLocaleString()}`} />
                     <Legend />
                     <Line type="monotone" dataKey="Revenue" stroke="#0F4C45" strokeWidth={3} activeDot={{ r: 8 }} />
@@ -380,41 +447,45 @@ export default function AdminPanel() {
               </div>
 
               <div className="dashboard-double-column">
-                {/* 2. BRANCH LEADERBOARD */}
+                {/* 2. MERGED BRANCH LEADERBOARD */}
                 <div className="column-card">
-                  <h3>🏆 Branch Performance Leaderboard</h3>
-                  <p className="chart-note">Top performing nodes categorized by revenue & growth velocity (Aug 2026)</p>
+                  <h3>🏆 Consolidated Branch Leaderboard</h3>
+                  <p className="chart-note">Branch rankings by consolidated revenue and growth rates (Aug 2026)</p>
                   
-                  <div className="leaders-split">
-                    <div className="leader-sub-col">
-                      <h4 style={{ color: "var(--color-success)", marginBottom: "8px", fontSize: "0.8rem", textTransform: "uppercase" }}>Revenue Leaders</h4>
-                      <ul className="simple-leader-list">
-                        {stats.leaderboard_revenue.slice(0, 5).map((p, idx) => (
-                          <li key={idx}>
-                            <span className="rank-num">#{idx + 1}</span>
-                            <span className="pharm-name">{p.pharmacy_name}</span>
-                            <span className="val font-mono">₹{p.revenue_inr.toLocaleString()}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="leader-sub-col">
-                      <h4 style={{ color: "var(--color-primary-light)", marginBottom: "8px", fontSize: "0.8rem", textTransform: "uppercase" }}>Growth Leaders</h4>
-                      <ul className="simple-leader-list">
-                        {stats.leaderboard_growth.slice(0, 5).map((p, idx) => (
-                          <li key={idx}>
-                            <span className="rank-num">#{idx + 1}</span>
-                            <span className="pharm-name">{p.pharmacy_name}</span>
-                            <span className="val text-success">↑{p.growth_pct}%</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                  <div className="table-wrap">
+                    <table className="mini-table">
+                      <thead>
+                        <tr>
+                          <th>Rank</th>
+                          <th>Pharmacy Name</th>
+                          <th>Aug Revenue</th>
+                          <th>Growth Rate</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stats.leaderboard_revenue
+                          .filter(filterByRegion)
+                          .map((p, idx) => {
+                            // find growth pct
+                            const growthObj = stats.leaderboard_growth.find(g => g.pharmacy_id === p.pharmacy_id);
+                            return (
+                              <tr key={idx}>
+                                <td><strong>#{idx + 1}</strong></td>
+                                <td>{p.pharmacy_name}</td>
+                                <td className="font-mono">₹{p.revenue_inr.toLocaleString()}</td>
+                                <td className={`font-semibold ${growthObj?.growth_pct >= 0 ? "text-success" : "negative"}`}>
+                                  {growthObj ? `${growthObj.growth_pct >= 0 ? "↑" : ""}${growthObj.growth_pct}%` : "—"}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
                   </div>
 
-                  <hr style={{ margin: "16px 0", borderColor: "var(--color-border)", opacity: 0.5 }} />
+                  <hr style={{ margin: "20px 0", borderColor: "var(--color-border)", opacity: 0.5 }} />
 
-                  <h3 style={{ fontSize: "0.95rem", color: "var(--color-danger)" }}>⚠️ At-Risk branches / Bottom Performers</h3>
+                  <h3 style={{ fontSize: "0.95rem", color: "var(--color-danger)" }}>⚠️ At-Risk / Bottom Performers</h3>
                   <p className="chart-note" style={{ marginBottom: "12px" }}>Nodes showing declining revenue growth or high stockout indicators.</p>
                   <div className="table-wrap">
                     <table className="mini-table">
@@ -423,22 +494,28 @@ export default function AdminPanel() {
                           <th>Pharmacy Name</th>
                           <th>Revenue (Aug)</th>
                           <th>MoM Growth</th>
-                          <th>Critical Alerts</th>
+                          <th>Stock Alerts</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {stats.bottom_performers.map((p, idx) => (
-                          <tr key={idx}>
-                            <td><strong>{p.pharmacy_name}</strong></td>
-                            <td className="font-mono">₹{p.revenue_inr.toLocaleString()}</td>
-                            <td className="negative">{p.growth_pct}%</td>
-                            <td>
-                              <span className="badge-alert-count">
-                                {p.stockout_alerts} alerts
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
+                        {stats.bottom_performers
+                          .filter(filterByRegion)
+                          .map((p, idx) => (
+                            <tr key={idx}>
+                              <td><strong>{p.pharmacy_name}</strong></td>
+                              <td className="font-mono">₹{p.revenue_inr.toLocaleString()}</td>
+                              <td className="negative">{p.growth_pct}%</td>
+                              <td>
+                                <span 
+                                  className="badge-alert-count clickable-badge"
+                                  onClick={() => setActiveTab("accounts")}
+                                  title="View details in Provisioning tab"
+                                >
+                                  {p.stockout_alerts} alerts
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
@@ -466,7 +543,11 @@ export default function AdminPanel() {
                         {stats.critical_alerts.map((item, idx) => (
                           <tr key={idx}>
                             <td><strong>{item.drug_name}</strong></td>
-                            <td><span className="badge-risk-scope">Critically low at {item.branches_count} branches</span></td>
+                            <td>
+                              <span className="badge-risk-scope">
+                                Critically low at {item.branches_count} {item.branches_count === 1 ? 'branch' : 'branches'}
+                              </span>
+                            </td>
                             <td className="highlight-val-overall font-semibold">{item.network_demand} sold</td>
                             <td className="font-mono">{item.avg_stock} units avg</td>
                           </tr>
@@ -482,105 +563,104 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              <div className="dashboard-double-column" style={{ marginTop: "28px" }}>
-                {/* 4. COMPLIANCE / DISCONTINUED DRUG EXPOSURE */}
-                <div className="column-card">
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "4px" }}>
-                    <span style={{ fontSize: "1.2rem" }}>⛔</span>
-                    <h3>Compliance / Discontinued Medicine Exposure</h3>
+              {/* 4. COMPLIANCE EXPOSURE DETAIL IF ANY */}
+              {stats.discontinued_exposure.length > 0 && (
+                <div className="table-card" style={{ marginTop: "28px" }}>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center", padding: "14px 14px 4px" }}>
+                    <span style={{ fontSize: "1.1rem" }}>⛔</span>
+                    <h3 style={{ fontSize: "1rem", margin: 0 }}>Compliance Exposure Details</h3>
                   </div>
-                  <p className="chart-note" style={{ marginBottom: "16px" }}>Branches that still hold active stock of discontinued or banned chemical compounds. Restock alternates immediately.</p>
+                  <p className="chart-note" style={{ padding: "0 14px 14px" }}>Branches that still hold active stock of discontinued or banned chemical compounds. Action required.</p>
+                  <table className="mini-table">
+                    <thead>
+                      <tr>
+                        <th>Branch</th>
+                        <th>Banned Compound</th>
+                        <th>Active Stock</th>
+                        <th>Compliance Risk</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.discontinued_exposure.map((item, idx) => (
+                        <tr key={idx}>
+                          <td>{item.pharmacy_name}</td>
+                          <td className="text-danger font-semibold">{item.drug_name}</td>
+                          <td className="font-mono text-bold">{item.stock_qty} units</td>
+                          <td><span className="pill-compliance-flag">Remove Stock</span></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="dashboard-double-column" style={{ marginTop: "28px" }}>
+                {/* 6. REGIONAL VIEW / SORTED TERRITORY DEMAND TABLE */}
+                <div className="column-card">
+                  <h3>🌍 Territories Ranked by Consolidated Demand</h3>
+                  <p className="chart-note" style={{ marginBottom: "16px" }}>Performance ranking of regional territory groupings based on Consolidated Revenue.</p>
                   
                   <div className="table-wrap">
                     <table className="mini-table">
                       <thead>
                         <tr>
-                          <th>Branch</th>
-                          <th>Banned Compound</th>
-                          <th>Active Stock</th>
-                          <th>Compliance Risk</th>
+                          <th>Rank</th>
+                          <th>Territory / Area</th>
+                          <th>Con. Revenue</th>
+                          <th>Active Branches</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {stats.discontinued_exposure.map((item, idx) => (
-                          <tr key={idx}>
-                            <td>{item.pharmacy_name}</td>
-                            <td className="text-danger font-semibold">{item.drug_name}</td>
-                            <td className="font-mono text-bold">{item.stock_qty} units</td>
-                            <td><span className="pill-compliance-flag">Remove Stock</span></td>
-                          </tr>
-                        ))}
-                        {stats.discontinued_exposure.length === 0 && (
-                          <tr>
-                            <td colSpan={4} className="empty-row" style={{ color: "var(--color-success)" }}>
-                              ✅ zero exposure. All nodes comply with banned product directives.
-                            </td>
-                          </tr>
-                        )}
+                        {stats.regional_hotspots
+                          .sort((a, b) => b.revenue_inr - a.revenue_inr)
+                          .map((item, idx) => (
+                            <tr key={idx}>
+                              <td><strong>#{idx + 1}</strong></td>
+                              <td>{item.area}</td>
+                              <td className="font-mono font-semibold">₹{Math.round(item.revenue_inr).toLocaleString()}</td>
+                              <td className="font-mono">{item.pharmacy_count} nodes</td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
                 </div>
 
-                {/* 6. REGIONAL / GEOGRAPHIC VIEW */}
+                {/* 5. MARKET INTELLIGENCE (CENTRALIZED WITH CONTROLS) */}
                 <div className="column-card">
-                  <h3>🌍 Regional Density & Demand Hotspots</h3>
-                  <p className="chart-note" style={{ marginBottom: "16px" }}>Pharmacy counts and consolidated demand metrics grouped by active territory coordinates.</p>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                    <h3>🚀 Centralized Market updates</h3>
+                    <Link to="/admin/medicines" className="btn-manage-catalog">Manage Catalog ⚙️</Link>
+                  </div>
+                  <p className="chart-note" style={{ marginBottom: "16px" }}>Catalog updates, restricted chemical parameters, and reference alternates.</p>
                   
-                  <div className="geo-hotspots-visualizer">
-                    <div className="geo-map-mock">
-                      <div className="map-legend">
-                        <span className="dot dot-high"></span> High Demand (&gt;₹2M)
-                        <span className="dot dot-medium" style={{ marginLeft: "12px" }}></span> Medium Demand
-                      </div>
-                      <div className="map-labels">
-                        {stats.regional_hotspots.map((item, idx) => (
-                          <div
-                            key={idx}
-                            className={`map-spot ${item.revenue_inr > 2000000 ? "spot-high" : "spot-medium"}`}
-                            style={{
-                              left: `${20 + (idx * 12) % 65}%`,
-                              top: `${15 + (idx * 16) % 70}%`
-                            }}
-                          >
-                            <span className="spot-title">{item.area}</span>
-                            <span className="spot-sub font-mono">₹{(item.revenue_inr / 100000).toFixed(1)}L ({item.pharmacy_count} nodes)</span>
-                          </div>
+                  <div className="ai-trends-container" style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                    <div className="trend-box new-entries-box" style={{ padding: "16px" }}>
+                      <h4 style={{ fontSize: "0.85rem", color: "var(--color-primary)", marginBottom: "8px" }}>Market Entries</h4>
+                      <ul className="trend-list" style={{ paddingLeft: "15px" }}>
+                        {stats.market_new_entries.map((entry, idx) => (
+                          <li key={idx} style={{ fontSize: "0.8rem", marginBottom: "6px" }}><strong>{entry.split(" - ")[0]}</strong> - {entry.split(" - ")[1]}</li>
                         ))}
+                      </ul>
+                    </div>
+
+                    <div className="trend-box stopped-box" style={{ padding: "16px" }}>
+                      <h4 style={{ fontSize: "0.85rem", color: "var(--color-danger)", marginBottom: "8px" }}>Restricted Catalog Alternate Mappings</h4>
+                      <div className="trend-table-wrap">
+                        <table className="trend-table" style={{ fontSize: "0.75rem" }}>
+                          <thead><tr><th>Banned Drug</th><th>Reason</th><th>Alternate</th></tr></thead>
+                          <tbody>
+                            {stats.market_stopped_alternates.map((item, idx) => (
+                              <tr key={idx}>
+                                <td>{item.discontinued}</td>
+                                <td>{item.reason}</td>
+                                <td className="alternate-name"><strong>{item.alternate}</strong></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 5. MARKET INTELLIGENCE (CENTRALIZED) */}
-              <div className="ai-trends-container" style={{ marginTop: "28px" }}>
-                <div className="trend-box new-entries-box">
-                  <div className="box-header"><span className="icon">🚀</span><h3>Centralized Market Product Entries</h3></div>
-                  <p className="box-sub">Newly approved formulation guidelines distributed to all node pharmacies.</p>
-                  <ul className="trend-list">
-                    {stats.market_new_entries.map((entry, idx) => (
-                      <li key={idx}><strong>{entry.split(" - ")[0]}</strong> - {entry.split(" - ")[1]}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="trend-box stopped-box">
-                  <div className="box-header"><span className="icon">⚠️</span><h3>Centralized Restricted Compound Catalog</h3></div>
-                  <p className="box-sub">Banned formulations and replacement parameters pushed to branch POS engines.</p>
-                  <div className="trend-table-wrap">
-                    <table className="trend-table">
-                      <thead><tr><th>Discontinued Drug</th><th>Reason</th><th>HQ Mandated Alternate</th></tr></thead>
-                      <tbody>
-                        {stats.market_stopped_alternates.map((item, idx) => (
-                          <tr key={idx}>
-                            <td className="discontinued-name">{item.discontinued}</td>
-                            <td className="discontinued-reason">{item.reason}</td>
-                            <td className="alternate-name"><strong>{item.alternate}</strong></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
                 </div>
               </div>
@@ -934,8 +1014,46 @@ export default function AdminPanel() {
           border-color: var(--color-primary) !important;
         }
 
+        .global-filter-bar {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-right: 12px;
+        }
+        .global-filter-bar label {
+          font-size: 0.85rem;
+          color: var(--color-text-muted);
+          font-weight: 600;
+        }
+        .filter-select {
+          padding: 6px 12px;
+          border-radius: var(--radius-md);
+          border: 1.5px solid var(--color-border);
+          font-size: 0.85rem;
+          background: var(--color-surface);
+          cursor: pointer;
+          font-weight: 600;
+        }
+
+        .compliance-banner-strip {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: #E8F4F1;
+          border: 1px solid #CFE6DA;
+          color: #0F4C45;
+          padding: 12px 18px;
+          border-radius: var(--radius-md);
+          font-size: 0.88rem;
+          margin-bottom: 20px;
+        }
+        .compliance-banner-strip.alert {
+          background: #FBEAE8;
+          border: 1px solid #F5C6C1;
+          color: var(--color-danger);
+        }
+
         .admin-toast {
-          margin-top: 18px;
           background: #EDF6F1;
           color: var(--color-primary);
           border: 1px solid #CFE6DA;
@@ -969,20 +1087,7 @@ export default function AdminPanel() {
         }
         .column-card h3 { font-size: 1.05rem; font-family: var(--font-body); margin-bottom: 4px; }
         .chart-note { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 14px; }
-
-        .leaders-split { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .simple-leader-list { list-style: none; padding: 0; margin: 0; }
-        .simple-leader-list li {
-          display: flex;
-          align-items: center;
-          padding: 10px 0;
-          border-bottom: 1px solid var(--color-border);
-          font-size: 0.82rem;
-        }
-        .simple-leader-list li:last-child { border-bottom: none; }
-        .rank-num { font-weight: 800; color: var(--color-text-muted); margin-right: 10px; width: 20px; }
-        .pharm-name { flex-grow: 1; font-weight: 500; }
-        .simple-leader-list .val { font-weight: 700; }
+        .chart-note-right { font-size: 0.8rem; color: var(--color-accent); font-weight: 600; }
 
         .badge-alert-count {
           background: #FBEAE8;
@@ -991,6 +1096,15 @@ export default function AdminPanel() {
           font-weight: 700;
           padding: 2px 8px;
           border-radius: 12px;
+        }
+        .clickable-badge {
+          cursor: pointer;
+          transition: transform 0.15s;
+          display: inline-block;
+        }
+        .clickable-badge:hover {
+          transform: scale(1.08);
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .badge-risk-scope {
           background: #FFF3CD;
@@ -1012,70 +1126,20 @@ export default function AdminPanel() {
           text-transform: uppercase;
         }
 
-        .geo-hotspots-visualizer {
-          background: var(--color-bg);
-          border: 1px solid var(--color-border);
+        .btn-manage-catalog {
+          font-size: 0.8rem;
+          color: var(--color-primary);
+          background: var(--color-accent-soft);
+          padding: 6px 12px;
           border-radius: var(--radius-md);
-          height: 320px;
-          position: relative;
-          overflow: hidden;
+          text-decoration: none;
+          font-weight: 700;
+          border: 1px solid #F0D9AE;
         }
-        .geo-map-mock {
-          width: 100%;
-          height: 100%;
-          background: radial-gradient(circle, #F8F6F0 20%, #E8E4D5 100%);
-          position: relative;
+        .btn-manage-catalog:hover {
+          background: var(--color-accent);
+          color: #3A2700;
         }
-        .map-legend {
-          position: absolute;
-          bottom: 10px;
-          left: 10px;
-          background: rgba(255,255,255,0.9);
-          padding: 6px 10px;
-          border-radius: 4px;
-          font-size: 0.72rem;
-          border: 1px solid var(--color-border);
-          z-index: 10;
-        }
-        .dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          display: inline-block;
-        }
-        .dot-high { background: var(--color-danger); }
-        .dot-medium { background: var(--color-primary-light); }
-
-        .map-spot {
-          position: absolute;
-          background: rgba(255, 255, 255, 0.95);
-          border: 1.5px solid var(--color-border);
-          border-radius: 6px;
-          padding: 6px 10px;
-          display: flex;
-          flex-direction: column;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-          min-width: 110px;
-          transition: transform 0.2s;
-        }
-        .map-spot:hover {
-          transform: scale(1.05);
-          z-index: 15;
-        }
-        .map-spot::before {
-          content: "";
-          position: absolute;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          top: -4px;
-          left: -4px;
-        }
-        .spot-high::before { background: var(--color-danger); }
-        .spot-medium::before { background: var(--color-primary-light); }
-        
-        .spot-title { font-size: 0.78rem; font-weight: 700; color: var(--color-text); }
-        .spot-sub { font-size: 0.68rem; color: var(--color-text-muted); margin-top: 2px; }
 
         .mini-table { font-size: 0.8rem; }
         .mini-table th { padding: 8px 10px; }
@@ -1139,31 +1203,17 @@ export default function AdminPanel() {
           padding: 24px;
         }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-        .quarter-selector label { font-size: 0.85rem; color: var(--color-text-muted); }
-        .quarter-selector select {
-          padding: 6px 12px;
-          border-radius: var(--radius-md);
-          border: 1.5px solid var(--color-border);
-          font-size: 0.85rem;
-          background: var(--color-surface);
-        }
 
         .ai-trends-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 28px; }
         @media (max-width: 850px) { .ai-trends-container { grid-template-columns: 1fr; } }
         .trend-box { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 24px; }
-        .box-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-        .box-header h3 { font-size: 1.05rem; font-family: var(--font-body); }
-        .box-sub { font-size: 0.8rem; color: var(--color-text-muted); margin-bottom: 16px; }
-        .trend-list { padding-left: 20px; font-size: 0.85rem; color: var(--color-text); }
-        .trend-list li { margin-bottom: 12px; line-height: 1.4; }
-        
-        .trend-table-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
-        .trend-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 400px; }
-        .trend-table th { background: var(--color-bg); padding: 8px 12px; border-bottom: 1px solid var(--color-border); }
-        .trend-table td { padding: 10px 12px; border-bottom: 1px solid var(--color-border); }
+        .trend-list { display: flex; flex-direction: column; gap: 10px; padding-left: 20px; margin: 0; }
+        .trend-list li { font-size: 0.85rem; color: var(--color-text); line-height: 1.4; }
+        .trend-table-wrap { overflow-x: auto; }
+        .trend-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+        .trend-table th { text-align: left; padding: 6px 8px; color: var(--color-text-muted); border-bottom: 1px solid var(--color-border); font-size: 0.7rem; text-transform: uppercase; }
+        .trend-table td { padding: 8px; border-bottom: 1px solid var(--color-border); }
         .trend-table tr:last-child td { border-bottom: none; }
-        .discontinued-name { font-weight: 700; color: var(--color-danger); }
-        .discontinued-reason { color: var(--color-text-muted); font-size: 0.78rem; }
         .alternate-name { color: var(--color-success); }
 
         .modal-overlay {

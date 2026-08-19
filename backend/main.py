@@ -1446,14 +1446,16 @@ def get_admin_dashboard_stats(current_user: TokenData = Depends(require_admin)):
     
     # Compute Network KPIs
     total_units_sold_network = 0
+    units_mom_growth = 0.0
     total_network_revenue = 0.0
     mom_growth = 0.0
     avg_profit_margin = 0.0
+    margin_change_mom = 0.0
     
     if not df_sales.empty:
         df_curr = df_sales[(df_sales["date"].dt.year == curr_year) & (df_sales["date"].dt.month == curr_month)]
         total_units_sold_network = int(df_curr["quantity"].sum())
-        total_network_revenue = float(df_curr["total_inr"].sum())
+        total_network_revenue = round(float(df_curr["total_inr"].sum()))
         
         # Gross profit margin calculations
         if "total_cost_inr" in df_curr.columns:
@@ -1462,13 +1464,30 @@ def get_admin_dashboard_stats(current_user: TokenData = Depends(require_admin)):
             total_cost = total_network_revenue * 0.73
             
         profit = total_network_revenue - total_cost
-        avg_profit_margin = (profit / total_network_revenue * 100) if total_network_revenue > 0 else 27.3
+        avg_profit_margin = round((profit / total_network_revenue * 100) if total_network_revenue > 0 else 27.3, 1)
         
-        # MoM Growth (August vs July)
+        # MoM calculations
         df_jul = df_sales[(df_sales["date"].dt.year == 2026) & (df_sales["date"].dt.month == 7)]
+        
+        # Revenue MoM
         revenue_jul = float(df_jul["total_inr"].sum()) if not df_jul.empty else 0.0
         if revenue_jul > 0:
             mom_growth = round(((total_network_revenue - revenue_jul) / revenue_jul) * 100, 1)
+            
+        # Units MoM
+        units_jul = int(df_jul["quantity"].sum()) if not df_jul.empty else 0
+        if units_jul > 0:
+            units_mom_growth = round(((total_units_sold_network - units_jul) / units_jul) * 100, 1)
+            
+        # Margin MoM
+        if not df_jul.empty:
+            if "total_cost_inr" in df_jul.columns:
+                cost_jul = float(df_jul["total_cost_inr"].sum())
+            else:
+                cost_jul = revenue_jul * 0.73
+            profit_jul = revenue_jul - cost_jul
+            margin_jul = (profit_jul / revenue_jul * 100) if revenue_jul > 0 else 27.3
+            margin_change_mom = round(avg_profit_margin - margin_jul, 1)
 
     # 2. Branch Leaderboard
     leaderboard_rev = []
@@ -1600,14 +1619,14 @@ def get_admin_dashboard_stats(current_user: TokenData = Depends(require_admin)):
                     "pharmacy_count": int(r["pharmacy_count"])
                 })
 
-    # 7. Network Revenue Trend
+    # 7. Network Revenue Trend (monthly)
     network_trend = []
     if not df_sales.empty:
-        df_sales["quarter"] = df_sales["date"].dt.to_period("Q").astype(str)
-        q_grouped = df_sales.groupby("quarter")["total_inr"].sum().reset_index()
-        for _, r in q_grouped.iterrows():
+        df_sales["month_str"] = df_sales["date"].dt.strftime("%Y-%m")
+        m_grouped = df_sales.groupby("month_str")["total_inr"].sum().reset_index()
+        for _, r in m_grouped.iterrows():
             network_trend.append({
-                "quarter": r["quarter"],
+                "month": r["month_str"],
                 "revenue_inr": round(r["total_inr"], 2)
             })
 
@@ -1637,9 +1656,11 @@ def get_admin_dashboard_stats(current_user: TokenData = Depends(require_admin)):
     return {
         "kpis": {
             "total_units_sold_network": total_units_sold_network,
-            "total_network_revenue": round(total_network_revenue, 2),
+            "units_mom_growth": units_mom_growth,
+            "total_network_revenue": total_network_revenue,
             "mom_growth": mom_growth,
-            "avg_profit_margin": round(avg_profit_margin, 1)
+            "avg_profit_margin": avg_profit_margin,
+            "margin_change_mom": margin_change_mom
         },
         "leaderboard_revenue": leaderboard_rev,
         "leaderboard_growth": leaderboard_growth,
