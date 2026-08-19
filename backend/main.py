@@ -1430,16 +1430,24 @@ def get_admin_dashboard_stats(
     scenario: str = Query("normal"),
     current_user: TokenData = Depends(require_admin)
 ):
-    import datetime
-
-    # 1. Load all sales
-    sales_docs = list(db.sales_transactions.find({}, {"_id": 0}))
+    # 1. Load sales — last 6 months only (major perf fix: avoids full collection scan)
+    import datetime as dt
+    six_months_ago = dt.datetime(2026, 2, 1)  # anchored to dataset epoch
+    sales_docs = list(db.sales_transactions.find(
+        {"date": {"$gte": six_months_ago}},
+        {"_id": 0, "date": 1, "pharmacy_id": 1, "pharmacy_name": 1,
+         "drug_name": 1, "category": 1, "quantity": 1, "total_inr": 1}
+    ))
     df_sales = pd.DataFrame(sales_docs)
     if not df_sales.empty:
         df_sales["date"] = pd.to_datetime(df_sales["date"])
     
-    # Load all stock
-    stock_docs = list(db.stock.find({}, {"_id": 0}))
+    # Load all stock (projection: only needed fields)
+    stock_docs = list(db.stock.find(
+        {},
+        {"_id": 0, "pharmacy_id": 1, "pharmacy_name": 1, "drug_name": 1,
+         "category": 1, "stock_qty": 1, "unit_price_inr": 1}
+    ))
     df_stock = pd.DataFrame(stock_docs)
 
     # Apply bottleneck modifier to stock
@@ -1448,6 +1456,9 @@ def get_admin_dashboard_stats(
 
     # Load all pharmacies
     pharmacies = list(db.pharmacies.find({}, {"_id": 0}))
+
+    # Pre-build pharmacy area lookup dict (avoids repeated pandas merges)
+    pharm_area_map = {p["pharmacy_id"]: p.get("area", "") for p in pharmacies}
     
     curr_year, curr_month = 2026, 8
     
@@ -1621,29 +1632,21 @@ def get_admin_dashboard_stats(
         {"discontinued": "Rosiglitazone (Avandia)", "reason": "Cardiovascular safety restriction", "alternate": "Pioglitazone or Metformin"}
     ]
 
-    # 6. Regional / Geographic View
+    # 6. Regional / Geographic View — use pre-built dict, avoid repeated merges
     regional_hotspots = []
     if not df_sales.empty:
-        df_pharm = pd.DataFrame(pharmacies)
-        if not df_pharm.empty:
-            # Join sales with pharmacy to get correct area names for all records
-            df_sales_merged = df_sales.merge(df_pharm[["pharmacy_id", "area"]], on="pharmacy_id", how="left")
-            df_sales_merged["area"] = df_sales_merged["area"].str.upper()
-            
-            area_sales = df_sales_merged.groupby("area")["total_inr"].sum().reset_index()
-            
-            df_pharm["area_upper"] = df_pharm["area"].str.upper()
-            pharm_counts = df_pharm.groupby("area_upper")["pharmacy_id"].count().reset_index()
-            pharm_counts.columns = ["area", "pharmacy_count"]
-            
-            merged_geo = area_sales.merge(pharm_counts, on="area", how="outer").fillna(0)
-            for _, r in merged_geo.iterrows():
-                if r["area"]:
-                    regional_hotspots.append({
-                        "area": str(r["area"]).title(),
-                        "revenue_inr": round(r["total_inr"], 2),
-                        "pharmacy_count": int(r["pharmacy_count"])
-                    })
+        # Map area via dict lookup (no full merge needed)
+        df_sales["area_key"] = df_sales["pharmacy_id"].map(pharm_area_map).str.upper().fillna("UNKNOWN")
+        area_revenue = df_sales.groupby("area_key")["total_inr"].sum()
+        area_pharm_count = df_sales.groupby("area_key")["pharmacy_id"].nunique()
+
+        for area_name, rev in area_revenue.items():
+            if area_name and area_name != "UNKNOWN":
+                regional_hotspots.append({
+                    "area": area_name.title(),
+                    "revenue_inr": round(rev, 2),
+                    "pharmacy_count": int(area_pharm_count.get(area_name, 0))
+                })
 
     # 7. Network Revenue Trend (monthly)
     network_trend = []
@@ -1656,27 +1659,31 @@ def get_admin_dashboard_stats(
                 "revenue_inr": round(r["total_inr"], 2)
             })
 
-    # 8. Pharmacy Management
+    # 8. Pharmacy Management — bulk-load all user accounts once (fixes N+1 loop)
+    all_users = list(db.users.find({"role": "pharmacy"}, {"_id": 0, "pharmacy_id": 1, "active": 1}))
+    user_active_map = {u["pharmacy_id"]: u.get("active", True) for u in all_users if u.get("pharmacy_id")}
+
     pharmacy_management_list = []
+    flagged_ids = {"PH20", "PH25"}
     for p in pharmacies:
         pid = p["pharmacy_id"]
-        user_account = db.users.find_one({"pharmacy_id": pid})
-        is_active = user_account.get("active", True) if user_account else True
-        
-        status = "Active" if is_active else "Suspended"
-        if pid in ["PH20", "PH25"]:
+        is_active = user_active_map.get(pid, True)
+
+        if pid in flagged_ids:
             status = "Flagged"
-            
-        last_upload = "2026-08-17"
-        
+        elif is_active:
+            status = "Active"
+        else:
+            status = "Suspended"
+
         pharmacy_management_list.append({
             "pharmacy_id": pid,
             "pharmacy_name": p["pharmacy_name"],
-            "area": p["area"],
+            "area": p.get("area", ""),
             "pharmacist_name": p.get("pharmacist_name", "Pharmacist"),
             "contact_number": p.get("contact_number", "N/A"),
             "status": status,
-            "last_upload": last_upload
+            "last_upload": "2026-08-17"
         })
 
     return {
