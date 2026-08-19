@@ -1430,11 +1430,10 @@ def get_admin_dashboard_stats(
     scenario: str = Query("normal"),
     current_user: TokenData = Depends(require_admin)
 ):
-    # 1. Load sales — last 6 months only (major perf fix: avoids full collection scan)
+    # 1. Load sales (projection: only needed fields — avoids transferring unused data)
     import datetime as dt
-    six_months_ago = dt.datetime(2026, 2, 1)  # anchored to dataset epoch
     sales_docs = list(db.sales_transactions.find(
-        {"date": {"$gte": six_months_ago}},
+        {},
         {"_id": 0, "date": 1, "pharmacy_id": 1, "pharmacy_name": 1,
          "drug_name": 1, "category": 1, "quantity": 1, "total_inr": 1}
     ))
