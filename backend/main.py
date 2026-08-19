@@ -1427,11 +1427,11 @@ def pharmacy_custom(
 
 @app.get("/admin/dashboard-stats")
 def get_admin_dashboard_stats(
-    scenario: str = Query("normal"),
     current_user: TokenData = Depends(require_admin)
 ):
-    # 1. Load sales (projection: only needed fields — avoids transferring unused data)
     import datetime as dt
+
+    # ── Load collections ──────────────────────────────────────────────────────
     sales_docs = list(db.sales_transactions.find(
         {},
         {"_id": 0, "date": 1, "pharmacy_id": 1, "pharmacy_name": 1,
@@ -1440,8 +1440,7 @@ def get_admin_dashboard_stats(
     df_sales = pd.DataFrame(sales_docs)
     if not df_sales.empty:
         df_sales["date"] = pd.to_datetime(df_sales["date"])
-    
-    # Load all stock (projection: only needed fields)
+
     stock_docs = list(db.stock.find(
         {},
         {"_id": 0, "pharmacy_id": 1, "pharmacy_name": 1, "drug_name": 1,
@@ -1449,28 +1448,180 @@ def get_admin_dashboard_stats(
     ))
     df_stock = pd.DataFrame(stock_docs)
 
-    # Apply bottleneck modifier to stock
-    if scenario == "bottleneck" and not df_stock.empty:
-        df_stock["stock_qty"] = (df_stock["stock_qty"] * 0.4).round().astype(int)
-
-    # Load all pharmacies
     pharmacies = list(db.pharmacies.find({}, {"_id": 0}))
+    pharm_map  = {p["pharmacy_id"]: p for p in pharmacies}
 
-    # Pre-build pharmacy area lookup dict (avoids repeated pandas merges)
-    pharm_area_map = {p["pharmacy_id"]: p.get("area", "") for p in pharmacies}
-    
-    curr_year, curr_month = 2026, 8
-    
-    # Compute Network KPIs
-    total_units_sold_network = 0
-    units_mom_growth = 0.0
-    total_network_revenue = 0.0
-    mom_growth = 0.0
-    avg_profit_margin = 0.0
-    margin_change_mom = 0.0
-    
+    # Dubai area keywords
+    DUBAI_AREAS = {"al barsha", "al sufouh", "barsha heights", "dubai internet city",
+                   "dubai knowledge park", "dubai marina", "dubai media city",
+                   "jumeirah", "jumeirah lake towers", "palm jumeirah"}
+
+    def classify_region(area: str) -> str:
+        return "Dubai" if area.lower().strip() in DUBAI_AREAS else "Mumbai"
+
+    # Tag each pharmacy with its region
+    for pid, p in pharm_map.items():
+        p["region"] = classify_region(p.get("area", ""))
+
+    curr_year, curr_month, prev_month = 2026, 8, 7
+
+    # ── Network-wide KPIs ─────────────────────────────────────────────────────
+    yearly_revenue      = 0.0
+    monthly_revenue_aug = 0.0
+    monthly_revenue_jul = 0.0
+    total_units_yearly  = 0
+    monthly_trend       = []
+
     if not df_sales.empty:
-        df_curr = df_sales[(df_sales["date"].dt.year == curr_year) & (df_sales["date"].dt.month == curr_month)].copy()
+        df_year = df_sales[df_sales["date"].dt.year == curr_year]
+        yearly_revenue     = round(float(df_year["total_inr"].sum()))
+        total_units_yearly = int(df_year["quantity"].sum())
+
+        df_aug = df_year[df_year["date"].dt.month == curr_month]
+        df_jul = df_year[df_year["date"].dt.month == prev_month]
+        monthly_revenue_aug = round(float(df_aug["total_inr"].sum()))
+        monthly_revenue_jul = round(float(df_jul["total_inr"].sum()))
+
+        growth_pct = 0.0
+        if monthly_revenue_jul > 0:
+            growth_pct = round(((monthly_revenue_aug - monthly_revenue_jul) / monthly_revenue_jul) * 100, 1)
+
+        # Monthly trend (all months of 2026)
+        df_sales["month_str"] = df_sales["date"].dt.strftime("%Y-%m")
+        m_grp = df_year.copy()
+        m_grp["month_str"] = m_grp["date"].dt.strftime("%Y-%m")
+        for m, grp in m_grp.groupby("month_str"):
+            monthly_trend.append({"month": m, "revenue": round(float(grp["total_inr"].sum()))})
+        monthly_trend.sort(key=lambda x: x["month"])
+    else:
+        growth_pct = 0.0
+
+    # ── Per-branch revenue (yearly + Aug) + stockout count ───────────────────
+    branch_rows = []
+
+    if not df_sales.empty:
+        df_year = df_sales[df_sales["date"].dt.year == curr_year]
+        df_aug  = df_year[df_year["date"].dt.month == curr_month]
+        df_jul  = df_year[df_year["date"].dt.month == prev_month]
+
+        yearly_by_ph = df_year.groupby("pharmacy_id").agg(
+            yearly_rev=("total_inr", "sum"),
+            yearly_units=("quantity", "sum")
+        )
+        aug_by_ph = df_aug.groupby("pharmacy_id").agg(
+            aug_rev=("total_inr", "sum"),
+            aug_units=("quantity", "sum")
+        )
+        jul_by_ph = df_jul.groupby("pharmacy_id")["total_inr"].sum().rename("jul_rev")
+
+        combined = yearly_by_ph.join(aug_by_ph, how="outer").join(jul_by_ph, how="outer").fillna(0)
+
+        # Stockout alert counts per pharmacy
+        stockout_counts = {}
+        if not df_stock.empty:
+            low = df_stock[df_stock["stock_qty"] < 20]
+            stockout_counts = low.groupby("pharmacy_id").size().to_dict()
+
+        for pid, row in combined.iterrows():
+            p = pharm_map.get(pid, {})
+            jul_rev = row.get("jul_rev", 0)
+            aug_rev = row.get("aug_rev", 0)
+            branch_growth = round(((aug_rev - jul_rev) / jul_rev * 100), 1) if jul_rev > 0 else 0.0
+            branch_rows.append({
+                "pharmacy_id":   pid,
+                "pharmacy_name": p.get("pharmacy_name", pid),
+                "area":          p.get("area", "—"),
+                "region":        p.get("region", "Mumbai"),
+                "contact":       p.get("contact_number", "N/A"),
+                "yearly_rev":    round(float(row.get("yearly_rev", 0))),
+                "aug_rev":       round(float(aug_rev)),
+                "yearly_units":  int(row.get("yearly_units", 0)),
+                "aug_units":     int(row.get("aug_units", 0)),
+                "growth_pct":    branch_growth,
+                "stockout_alerts": int(stockout_counts.get(pid, 0))
+            })
+
+    branch_rows.sort(key=lambda x: x["yearly_rev"], reverse=True)
+    top5    = branch_rows[:5]
+    bottom5 = sorted(branch_rows, key=lambda x: x["yearly_rev"])[:5]
+
+    # ── Stockout alerts (network-wide) ────────────────────────────────────────
+    critical_alerts = []
+    if not df_stock.empty and not df_sales.empty:
+        demand = df_sales.groupby("drug_name")["quantity"].sum()
+        low_stock_all = df_stock[df_stock["stock_qty"] < 20]
+        if not low_stock_all.empty:
+            grouped = low_stock_all.groupby("drug_name").agg(
+                branches_count=("pharmacy_id", "count"),
+                avg_stock=("stock_qty", "mean")
+            )
+            for drug, r in grouped.iterrows():
+                critical_alerts.append({
+                    "drug_name":      drug,
+                    "branches_count": int(r["branches_count"]),
+                    "network_demand": int(demand.get(drug, 0)),
+                    "avg_stock":      round(r["avg_stock"], 1)
+                })
+            critical_alerts.sort(key=lambda x: x["network_demand"], reverse=True)
+            critical_alerts = critical_alerts[:8]
+
+    # ── Compliance (banned stock) ─────────────────────────────────────────────
+    BANNED = ["zantac", "ranitidine", "sibutramine", "reductil", "vioxx",
+              "rofecoxib", "avandia", "rosiglitazone"]
+    discontinued_exposure = []
+    if not df_stock.empty:
+        for _, r in df_stock[df_stock["stock_qty"] > 0].iterrows():
+            if any(k in str(r["drug_name"]).lower() for k in BANNED):
+                discontinued_exposure.append({
+                    "pharmacy_name": r["pharmacy_name"],
+                    "drug_name":     r["drug_name"],
+                    "stock_qty":     int(r["stock_qty"])
+                })
+
+    # ── Pharmacy management list ──────────────────────────────────────────────
+    all_users = list(db.users.find({"role": "pharmacy"},
+                     {"_id": 0, "pharmacy_id": 1, "active": 1}))
+    user_active_map = {u["pharmacy_id"]: u.get("active", True)
+                       for u in all_users if u.get("pharmacy_id")}
+
+    pharmacy_management_list = []
+    FLAGGED = {"PH20", "PH25"}
+    for p in pharmacies:
+        pid     = p["pharmacy_id"]
+        active  = user_active_map.get(pid, True)
+        if pid in FLAGGED:     status = "Flagged"
+        elif active:           status = "Active"
+        else:                  status = "Suspended"
+        pharmacy_management_list.append({
+            "pharmacy_id":    pid,
+            "pharmacy_name":  p["pharmacy_name"],
+            "area":           p.get("area", ""),
+            "region":         pharm_map.get(pid, {}).get("region", "Mumbai"),
+            "pharmacist_name": p.get("pharmacist_name", "Pharmacist"),
+            "contact_number": p.get("contact_number", "N/A"),
+            "status":         status,
+            "last_upload":    "2026-08-17"
+        })
+
+    return {
+        "kpis": {
+            "yearly_revenue":      yearly_revenue,
+            "monthly_revenue_aug": monthly_revenue_aug,
+            "monthly_revenue_jul": monthly_revenue_jul,
+            "growth_pct":          growth_pct,
+            "total_units_yearly":  total_units_yearly
+        },
+        "monthly_trend":         monthly_trend,
+        "top5_branches":         top5,
+        "bottom5_branches":      bottom5,
+        "all_branches":          branch_rows,
+        "critical_alerts":       critical_alerts,
+        "discontinued_exposure": discontinued_exposure,
+        "pharmacy_management":   pharmacy_management_list
+    }
+
+
+@app.get("/dashboard/forecast")
         
         # Apply scenario demand multiplier
         if scenario == "monsoon":
