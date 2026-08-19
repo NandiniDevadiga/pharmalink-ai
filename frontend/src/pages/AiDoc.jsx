@@ -71,13 +71,17 @@ export default function AiDoc() {
 
       {advice && (
         <div className="advice-container">
+          <p className="disclaimer-alert" style={{ fontSize: "0.85rem", fontStyle: "italic", background: "#FFF3CD", border: "1px solid #FFEBAA", color: "#856404", padding: "12px", borderRadius: "var(--radius-md)", marginBottom: "20px" }}>
+            ⚠️ <strong>Disclaimer:</strong> {advice.disclaimer}
+          </p>
+
           {/* Section: Alternates */}
-          {advice.alternatives && advice.alternatives.length > 0 && (
-            <div className="advice-card full-width">
-              <h3>🔄 Alternative Medicines</h3>
-              <p className="card-desc">Suggested substitute medications with the same or equivalent clinical formulations:</p>
+          {advice.alternative_medicines && advice.alternative_medicines.length > 0 && (
+            <div className="advice-card full-width" style={{ marginBottom: "24px" }}>
+              <h3>🔄 Equivalent Chemical Alternates</h3>
+              <p className="card-desc">Suggested substitute medications with the same or equivalent clinical formulations in stock:</p>
               <div className="chips-list">
-                {advice.alternatives.map((alt, idx) => (
+                {advice.alternative_medicines.map((alt, idx) => (
                   <span key={idx} className="alt-chip">{alt}</span>
                 ))}
               </div>
@@ -87,27 +91,57 @@ export default function AiDoc() {
           {/* Section: Lifestyle advice */}
           <div className="advice-grid">
             <div className="advice-card">
-              <h3>🥦 Diet & Nutrition</h3>
-              <ul>
-                {advice.diet.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ul>
+              <h3>🥦 Diet & Nutrition Guidelines</h3>
+              <div style={{ marginBottom: "14px" }}>
+                <h4 style={{ color: "var(--color-success)", fontSize: "0.85rem", marginBottom: "6px" }}>Recommended Foods:</h4>
+                <ul>
+                  {advice.food_dos?.map((item, idx) => (
+                    <li key={idx} style={{ listStyleType: "none", position: "relative", paddingLeft: "15px" }}>
+                      <span style={{ position: "absolute", left: 0, color: "var(--color-success)" }}>✓</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 style={{ color: "var(--color-danger)", fontSize: "0.85rem", marginBottom: "6px" }}>Foods to Avoid:</h4>
+                <ul>
+                  {advice.food_donts?.map((item, idx) => (
+                    <li key={idx} style={{ listStyleType: "none", position: "relative", paddingLeft: "15px" }}>
+                      <span style={{ position: "absolute", left: 0, color: "var(--color-danger)" }}>✗</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             <div className="advice-card">
               <h3>🏃 Activity & Exercises</h3>
-              <ul>
-                {advice.activity.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ul>
+              <div style={{ marginBottom: "14px" }}>
+                <h4 style={{ color: "var(--color-success)", fontSize: "0.85rem", marginBottom: "6px" }}>Do's:</h4>
+                <ul>
+                  {advice.activity_dos?.map((item, idx) => (
+                    <li key={idx} style={{ listStyleType: "none", position: "relative", paddingLeft: "15px" }}>
+                      <span style={{ position: "absolute", left: 0, color: "var(--color-success)" }}>✓</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 style={{ color: "var(--color-danger)", fontSize: "0.85rem", marginBottom: "6px" }}>Avoid:</h4>
+                <ul>
+                  {advice.activity_donts?.map((item, idx) => (
+                    <li key={idx} style={{ listStyleType: "none", position: "relative", paddingLeft: "15px" }}>
+                      <span style={{ position: "absolute", left: 0, color: "var(--color-danger)" }}>✗</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             <div className="advice-card">
-              <h3>🧘 Habits to Avoid</h3>
+              <h3>🧘 Habits & Suggestions</h3>
               <ul>
-                {advice.avoid.map((item, idx) => (
+                {advice.other_suggestions?.map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
               </ul>
