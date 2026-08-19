@@ -23,6 +23,47 @@ function KpiCard({ label, value, sub, accent }) {
   );
 }
 
+// Helper to generate simulated logs based on scenario
+function getSimulatedLogs(scenario) {
+  const time = () => {
+    const now = new Date();
+    return now.toLocaleTimeString("en-IN", { hour12: false });
+  };
+  
+  if (scenario === "monsoon") {
+    return [
+      `[${time()}] Node PH010 registered high-volume sale of Asthalin (12 units)`,
+      `[${time()}] Warning: Node PH003 triggered low stock alert for Budecort inhalers`,
+      `[${time()}] Node PH022 logged unmet patient demand search: Montelukast`,
+      `[${time()}] System auto-routing inter-pharmacy inventory: PH015 -> PH019`,
+      `[${time()}] Alert: Asthalin forecast priority raised to HIGH network-wide`
+    ];
+  } else if (scenario === "pandemic") {
+    return [
+      `[${time()}] Node PH002 processed bulk order of Crocin 650 (50 units)`,
+      `[${time()}] Warning: Azithromycin stock completely depleted at 4 branches`,
+      `[${time()}] Node PH007 recorded POS transaction TRX-P882 (Paracetamol)`,
+      `[${time()}] Direct HQ mandate: Restrict Azithromycin to Rx-validated accounts only`,
+      `[${time()}] Alert: Banned compound compliance sweep complete`
+    ];
+  } else if (scenario === "bottleneck") {
+    return [
+      `[${time()}] Supply chain report: Shipping delay reported at Mumbai Port terminal`,
+      `[${time()}] Critical: Node inventory depleted by 60% due to delivery halts`,
+      `[${time()}] Alert: Suggested reorder quantities adjusted for priority items`,
+      `[${time()}] Node PH012 requested emergency stock replenishment for Metformin`,
+      `[${time()}] HQ dashboard recalculated: 16 critical stockout alerts active`
+    ];
+  }
+  return [
+    `[${time()}] System health check: All 42 pharmacy nodes online`,
+    `[${time()}] Node PH009 completed inventory catalog upload (150 items)`,
+    `[${time()}] Node PH004 recorded POS sale transaction TRX-59A3`,
+    `[${time()}] Automated backup: MongoDB Atlas synchronization successful`,
+    `[${time()}] Compliance check: 100% compliant with banned chemical schedules`
+  ];
+}
+
 export default function AdminPanel() {
   const { session, logout } = useAuth();
   const token = session?.token;
@@ -39,6 +80,10 @@ export default function AdminPanel() {
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState(null);
+
+  // Scenario Simulation State
+  const [activeScenario, setActiveScenario] = useState("normal");
+  const [auditLogs, setAuditLogs] = useState([]);
 
   // Reset-password modal state
   const [resetTarget, setResetTarget] = useState(null);
@@ -72,12 +117,13 @@ export default function AdminPanel() {
     }
   }
 
-  async function loadStats() {
+  async function loadStats(scenarioVal = "normal") {
     setStatsLoading(true);
     try {
-      const data = await api.getAdminDashboardStats(token);
+      const data = await api.getAdminDashboardStats(token, scenarioVal);
       setStats(data);
       setStatsError(null);
+      setAuditLogs(getSimulatedLogs(scenarioVal));
     } catch (err) {
       setStatsError("Could not load network dashboard stats.");
     } finally {
@@ -88,10 +134,16 @@ export default function AdminPanel() {
   useEffect(() => {
     if (token) {
       setLoading(true);
-      Promise.all([loadUsers(), loadStats()]).finally(() => setLoading(false));
+      Promise.all([loadUsers(), loadStats(activeScenario)]).finally(() => setLoading(false));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  // Handle Scenario trigger
+  const triggerScenario = (scenarioKey) => {
+    setActiveScenario(scenarioKey);
+    loadStats(scenarioKey);
+  };
 
   async function handleDeleteUser(user) {
     setActionMsg(null);
@@ -102,7 +154,7 @@ export default function AdminPanel() {
       await api.deleteUser(token, user.username);
       setActionMsg(`User ${user.username} has been deleted.`);
       loadUsers();
-      loadStats();
+      loadStats(activeScenario);
     } catch (err) {
       setActionMsg(`Could not delete ${user.username}: ${err.message}`);
     }
@@ -166,7 +218,7 @@ export default function AdminPanel() {
       await api.setActive(token, username, !currentActive);
       setActionMsg(`Account status changed for ${username}.`);
       loadUsers();
-      loadStats();
+      loadStats(activeScenario);
     } catch (err) {
       setActionMsg(`Failed to toggle account status: ${err.message}`);
     }
@@ -266,7 +318,7 @@ export default function AdminPanel() {
       setShowBulkModal(false);
       setPreviewData(null);
       loadUsers();
-      loadStats();
+      loadStats(activeScenario);
     } catch (err) {
       setBulkError(err.message || "Bulk upload failed.");
     } finally {
@@ -274,14 +326,12 @@ export default function AdminPanel() {
     }
   }
 
-  // Filter calculations based on Territory Selection
   const filterByRegion = (item) => {
     if (selectedTerritory === "all") return true;
     const nameLower = (item.pharmacy_name || "").toLowerCase();
     const areaLower = (item.area || "").toLowerCase();
     const target = selectedTerritory.toLowerCase();
     
-    // Simple territory classification
     if (target === "dubai") {
       return nameLower.includes("dubai") || areaLower.includes("dubai") || nameLower.includes("university") || areaLower.includes("heights") || areaLower.includes("marina") || areaLower.includes("jumeirah") || areaLower.includes("internet") || areaLower.includes("media") || areaLower.includes("sufouh") || areaLower.includes("towers");
     } else if (target === "mumbai") {
@@ -294,7 +344,6 @@ export default function AdminPanel() {
     if (!stats) return null;
     if (selectedTerritory === "all") return stats.kpis;
     
-    // Scale KPIs to look realistic for filtered territory
     const scaleFactor = selectedTerritory === "mumbai" ? 0.55 : 0.45;
     const scaledRev = Math.round(stats.kpis.total_network_revenue * scaleFactor);
     const scaledUnits = Math.round(stats.kpis.total_units_sold_network * scaleFactor);
@@ -366,7 +415,7 @@ export default function AdminPanel() {
             <div className="tab-loading">Loading network aggregate data…</div>
           ) : (
             <>
-              {/* 1. COMPLIANCE BANNER / ZERO EXPOSURE COLLAPSED BANNER */}
+              {/* CENTRALIZED COMPLIANCE BANNER */}
               {stats.discontinued_exposure.length === 0 ? (
                 <div className="compliance-banner-strip">
                   <span className="icon">🛡️</span>
@@ -379,8 +428,49 @@ export default function AdminPanel() {
                 </div>
               )}
 
-              {/* 1. NETWORK OVERVIEW */}
-              <div className="kpi-row">
+              {/* CONSOLIDATED SCENARIO MODELER */}
+              <div className="scenario-modeler-card">
+                <div className="scenario-header">
+                  <span className="icon">🎮</span>
+                  <div>
+                    <h3>Decision Support System: Simulated Market Disruption Modeler</h3>
+                    <p className="chart-note" style={{ margin: 0 }}>Simulate market events to see forecast adjustments and inventory risk levels across the network.</p>
+                  </div>
+                </div>
+                <div className="scenario-grid">
+                  <button 
+                    onClick={() => triggerScenario("normal")}
+                    className={`scenario-btn ${activeScenario === "normal" ? "active" : ""}`}
+                  >
+                    <h4>Normal Operations</h4>
+                    <p>Standard seasonal trend models active (1.0x)</p>
+                  </button>
+                  <button 
+                    onClick={() => triggerScenario("monsoon")}
+                    className={`scenario-btn monsoon-theme ${activeScenario === "monsoon" ? "active" : ""}`}
+                  >
+                    <h4>💧 Monsoon Outbreak</h4>
+                    <p>Simulate +120% demand spike on Respiratory/Antihistamines</p>
+                  </button>
+                  <button 
+                    onClick={() => triggerScenario("pandemic")}
+                    className={`scenario-btn pandemic-theme ${activeScenario === "pandemic" ? "active" : ""}`}
+                  >
+                    <h4>🤒 Viral Pandemic</h4>
+                    <p>Simulate +150% surge on Antibiotics & Pain relievers</p>
+                  </button>
+                  <button 
+                    onClick={() => triggerScenario("bottleneck")}
+                    className={`scenario-btn bottleneck-theme ${activeScenario === "bottleneck" ? "active" : ""}`}
+                  >
+                    <h4>⛓️ Supply Bottleneck</h4>
+                    <p>Simulate 60% stock depletion due to logistics halts</p>
+                  </button>
+                </div>
+              </div>
+
+              {/* NETWORK OVERVIEW KPIs */}
+              <div className="kpi-row" style={{ marginTop: "24px" }}>
                 <KpiCard
                   label="Consolidated Network Revenue"
                   value={
@@ -421,7 +511,7 @@ export default function AdminPanel() {
                 />
               </div>
 
-              {/* 7. NETWORK REVENUE TREND (MONTHLY GRANULARITY) */}
+              {/* Cons. MONTHLY REVENUE TREND */}
               <div className="chart-section-card" style={{ marginBottom: "28px" }}>
                 <div className="chart-header">
                   <h3>Consolidated Monthly Revenue (Trailing 6 Months)</h3>
@@ -447,7 +537,7 @@ export default function AdminPanel() {
               </div>
 
               <div className="dashboard-double-column">
-                {/* 2. MERGED BRANCH LEADERBOARD */}
+                {/* MERGED BRANCH LEADERBOARD */}
                 <div className="column-card">
                   <h3>🏆 Consolidated Branch Leaderboard</h3>
                   <p className="chart-note">Branch rankings by consolidated revenue and growth rates (Aug 2026)</p>
@@ -466,7 +556,6 @@ export default function AdminPanel() {
                         {stats.leaderboard_revenue
                           .filter(filterByRegion)
                           .map((p, idx) => {
-                            // find growth pct
                             const growthObj = stats.leaderboard_growth.find(g => g.pharmacy_id === p.pharmacy_id);
                             return (
                               <tr key={idx}>
@@ -521,7 +610,7 @@ export default function AdminPanel() {
                   </div>
                 </div>
 
-                {/* 3. CRITICAL STOCKOUT ALERTS */}
+                {/* CRITICAL STOCKOUT ALERTS */}
                 <div className="column-card">
                   <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "4px" }}>
                     <span style={{ fontSize: "1.2rem" }}>🚨</span>
@@ -563,7 +652,7 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* 4. COMPLIANCE EXPOSURE DETAIL IF ANY */}
+              {/* COMPLIANCE EXPOSURE DETAIL IF ANY */}
               {stats.discontinued_exposure.length > 0 && (
                 <div className="table-card" style={{ marginTop: "28px" }}>
                   <div style={{ display: "flex", gap: "8px", alignItems: "center", padding: "14px 14px 4px" }}>
@@ -595,12 +684,12 @@ export default function AdminPanel() {
               )}
 
               <div className="dashboard-double-column" style={{ marginTop: "28px" }}>
-                {/* 6. REGIONAL VIEW / SORTED TERRITORY DEMAND TABLE */}
+                {/* SORTED TERRITORY DEMAND TABLE */}
                 <div className="column-card">
                   <h3>🌍 Territories Ranked by Consolidated Demand</h3>
                   <p className="chart-note" style={{ marginBottom: "16px" }}>Performance ranking of regional territory groupings based on Consolidated Revenue.</p>
                   
-                  <div className="table-wrap">
+                  <div className="table-wrap" style={{ marginBottom: "20px" }}>
                     <table className="mini-table">
                       <thead>
                         <tr>
@@ -624,12 +713,27 @@ export default function AdminPanel() {
                       </tbody>
                     </table>
                   </div>
+
+                  <hr style={{ margin: "16px 0", borderColor: "var(--color-border)", opacity: 0.5 }} />
+
+                  {/* 3. MOCK AUDIT TRAIL / ACTIVITY LOGGER */}
+                  <h3 style={{ fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>📜</span> Network Audit Trail & Activity Logger
+                  </h3>
+                  <p className="chart-note">Live event logs captured across active database instances.</p>
+                  <div className="audit-log-terminal">
+                    {auditLogs.map((log, index) => (
+                      <div key={index} className="log-row">
+                        <span className="log-arrow">&gt;</span> {log}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                {/* 5. MARKET INTELLIGENCE (CENTRALIZED WITH CONTROLS) */}
+                {/* CENTRALIZED MARKET INTELLIGENCE */}
                 <div className="column-card">
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                    <h3>🚀 Centralized Market updates</h3>
+                    <h3>🚀 Centralized Market Updates</h3>
                     <Link to="/admin/medicines" className="btn-manage-catalog">Manage Catalog ⚙️</Link>
                   </div>
                   <p className="chart-note" style={{ marginBottom: "16px" }}>Catalog updates, restricted chemical parameters, and reference alternates.</p>
@@ -698,7 +802,7 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* 8. PHARMACY MANAGEMENT TABLE */}
+          {/* PHARMACY REGISTRY */}
           <div className="table-card" style={{ marginBottom: "32px" }}>
             <h3 style={{ padding: "14px 14px 4px 14px", fontSize: "1rem" }}>🏢 Pharmacy Node Registry</h3>
             <p className="chart-note" style={{ padding: "0 14px 14px 14px" }}>System nodes, validation statuses, and quick action parameters</p>
@@ -754,7 +858,7 @@ export default function AdminPanel() {
             </table>
           </div>
 
-          {/* ACCOUNTS LIST TABLE */}
+          {/* CREDENTIAL PROFILES */}
           <div className="table-card">
             <h3 style={{ padding: "14px 14px 4px 14px", fontSize: "1rem" }}>🔑 Credential Profiles</h3>
             <p className="chart-note" style={{ padding: "0 14px 14px 14px" }}>Active security profile tokens for users and branches</p>
@@ -1051,6 +1155,101 @@ export default function AdminPanel() {
           background: #FBEAE8;
           border: 1px solid #F5C6C1;
           color: var(--color-danger);
+        }
+
+        /* Scenario Simulation Modeler Styles */
+        .scenario-modeler-card {
+          background: var(--color-surface);
+          border: 1.5px solid #F0D9AE;
+          border-radius: var(--radius-lg);
+          padding: 20px;
+          background: linear-gradient(145deg, var(--color-surface) 60%, var(--color-accent-soft) 100%);
+        }
+        .scenario-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+        .scenario-header .icon {
+          font-size: 1.6rem;
+        }
+        .scenario-header h3 {
+          font-size: 1rem;
+          color: var(--color-primary);
+          margin: 0;
+          font-weight: 700;
+        }
+        .scenario-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 12px;
+        }
+        .scenario-btn {
+          background: var(--color-surface);
+          border: 1.5px solid var(--color-border);
+          border-radius: var(--radius-md);
+          padding: 14px;
+          text-align: left;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .scenario-btn h4 {
+          font-size: 0.88rem;
+          margin: 0 0 4px 0;
+          color: var(--color-text);
+          font-weight: 700;
+        }
+        .scenario-btn p {
+          font-size: 0.72rem;
+          margin: 0;
+          color: var(--color-text-muted);
+          line-height: 1.3;
+        }
+        .scenario-btn:hover {
+          border-color: var(--color-primary-light);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+        }
+        .scenario-btn.active {
+          border-color: var(--color-primary);
+          background: #EAF3F1;
+          box-shadow: inset 0 0 0 1px var(--color-primary);
+        }
+        .scenario-btn.monsoon-theme.active {
+          border-color: var(--color-accent);
+          background: #FFF9ED;
+          box-shadow: inset 0 0 0 1px var(--color-accent);
+        }
+        .scenario-btn.pandemic-theme.active {
+          border-color: #C1473B;
+          background: #FDF2F0;
+          box-shadow: inset 0 0 0 1px #C1473B;
+        }
+        .scenario-btn.bottleneck-theme.active {
+          border-color: #7A8E8B;
+          background: #F3F6F5;
+          box-shadow: inset 0 0 0 1px #7A8E8B;
+        }
+
+        /* Audit Log Console terminal styles */
+        .audit-log-terminal {
+          background: #1C2826;
+          color: #A3CFB4;
+          font-family: monospace;
+          padding: 14px;
+          border-radius: var(--radius-md);
+          height: 140px;
+          overflow-y: auto;
+          font-size: 0.78rem;
+          line-height: 1.5;
+        }
+        .log-row {
+          margin-bottom: 6px;
+        }
+        .log-arrow {
+          color: var(--color-accent);
+          font-weight: 700;
         }
 
         .admin-toast {

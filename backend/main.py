@@ -1426,7 +1426,10 @@ def pharmacy_custom(
 
 
 @app.get("/admin/dashboard-stats")
-def get_admin_dashboard_stats(current_user: TokenData = Depends(require_admin)):
+def get_admin_dashboard_stats(
+    scenario: str = Query("normal"),
+    current_user: TokenData = Depends(require_admin)
+):
     import datetime
 
     # 1. Load all sales
@@ -1438,6 +1441,10 @@ def get_admin_dashboard_stats(current_user: TokenData = Depends(require_admin)):
     # Load all stock
     stock_docs = list(db.stock.find({}, {"_id": 0}))
     df_stock = pd.DataFrame(stock_docs)
+
+    # Apply bottleneck modifier to stock
+    if scenario == "bottleneck" and not df_stock.empty:
+        df_stock["stock_qty"] = (df_stock["stock_qty"] * 0.4).round().astype(int)
 
     # Load all pharmacies
     pharmacies = list(db.pharmacies.find({}, {"_id": 0}))
@@ -1453,7 +1460,20 @@ def get_admin_dashboard_stats(current_user: TokenData = Depends(require_admin)):
     margin_change_mom = 0.0
     
     if not df_sales.empty:
-        df_curr = df_sales[(df_sales["date"].dt.year == curr_year) & (df_sales["date"].dt.month == curr_month)]
+        df_curr = df_sales[(df_sales["date"].dt.year == curr_year) & (df_sales["date"].dt.month == curr_month)].copy()
+        
+        # Apply scenario demand multiplier
+        if scenario == "monsoon":
+            # 2.2x demand for Respiratory and Antihistamines
+            mask = df_curr["category"].isin(["Respiratory", "Antihistamine"])
+            df_curr.loc[mask, "quantity"] = (df_curr.loc[mask, "quantity"] * 2.2).round().astype(int)
+            df_curr.loc[mask, "total_inr"] = df_curr.loc[mask, "total_inr"] * 2.2
+        elif scenario == "pandemic":
+            # 2.5x demand for Antibiotics and Analgesics
+            mask = df_curr["category"].isin(["Antibiotic", "Analgesic"])
+            df_curr.loc[mask, "quantity"] = (df_curr.loc[mask, "quantity"] * 2.5).round().astype(int)
+            df_curr.loc[mask, "total_inr"] = df_curr.loc[mask, "total_inr"] * 2.5
+            
         total_units_sold_network = int(df_curr["quantity"].sum())
         total_network_revenue = round(float(df_curr["total_inr"].sum()))
         
