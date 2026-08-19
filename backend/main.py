@@ -1604,20 +1604,26 @@ def get_admin_dashboard_stats(current_user: TokenData = Depends(require_admin)):
     # 6. Regional / Geographic View
     regional_hotspots = []
     if not df_sales.empty:
-        area_sales = df_sales.groupby("area")["total_inr"].sum().reset_index()
         df_pharm = pd.DataFrame(pharmacies)
         if not df_pharm.empty:
+            # Join sales with pharmacy to get correct area names for all records
+            df_sales_merged = df_sales.merge(df_pharm[["pharmacy_id", "area"]], on="pharmacy_id", how="left")
+            df_sales_merged["area"] = df_sales_merged["area"].str.upper()
+            
+            area_sales = df_sales_merged.groupby("area")["total_inr"].sum().reset_index()
+            
             df_pharm["area_upper"] = df_pharm["area"].str.upper()
             pharm_counts = df_pharm.groupby("area_upper")["pharmacy_id"].count().reset_index()
             pharm_counts.columns = ["area", "pharmacy_count"]
             
             merged_geo = area_sales.merge(pharm_counts, on="area", how="outer").fillna(0)
             for _, r in merged_geo.iterrows():
-                regional_hotspots.append({
-                    "area": r["area"],
-                    "revenue_inr": round(r["total_inr"], 2),
-                    "pharmacy_count": int(r["pharmacy_count"])
-                })
+                if r["area"]:
+                    regional_hotspots.append({
+                        "area": str(r["area"]).title(),
+                        "revenue_inr": round(r["total_inr"], 2),
+                        "pharmacy_count": int(r["pharmacy_count"])
+                    })
 
     # 7. Network Revenue Trend (monthly)
     network_trend = []
